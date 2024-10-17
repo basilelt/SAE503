@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+
+# Get the root directory of the script
+ROOT_DIR=$(dirname "$(readlink $0)")
+CLI_ENTRYPOINT=$(basename $0)
+
+# Export the root directory for later use
+export ROOT_DIR
+
+# Include utility functions
+. "$ROOT_DIR/utils"
+
+# Locate the correct command to execute by traversing the "app" directory
+# to find folders and files that match the provided arguments.
+CMD_FILE="$ROOT_DIR/app"
+CMD_ARG_START=1
+
+while [[ -d "$CMD_FILE" && $CMD_ARG_START -le $# ]]; do
+    # If the user provides "help" as the last argument for a directory,
+    # display help for that directory instead of continuing
+    if [[ "${!CMD_ARG_START}" == "help" ]]; then
+        # Remove the "help" part from the command
+        ARGS=("$@")
+        unset "ARGS[$((CMD_ARG_START-1))]"
+        ARGS=("${ARGS[@]}")
+
+        "$ROOT_DIR/help" "$0" "${ARGS[@]}"
+        exit 3
+    fi
+
+    CMD_FILE="$CMD_FILE/${!CMD_ARG_START}"
+    CMD_ARG_START=$((CMD_ARG_START+1))
+done
+
+# Place the command arguments in their own list
+CMD_ARGS=("${@:CMD_ARG_START}")
+
+# If we end up on a directory after processing all arguments, it means the command is incomplete.
+# In this case, we display help for this directory.
+if [ -d "$CMD_FILE" ]; then
+    "$ROOT_DIR/help" "$0" "$@"
+    exit 3
+fi
+
+# If we don't find the exact command entered by the user, we display a warning.
+if [[ ! -f "$CMD_FILE" ]]; then
+    "$ROOT_DIR/help" "$0" "${@:1:$((CMD_ARG_START-1))}"
+    >&2 echo -e "\033[31mThe command \033[36m$CLI_ENTRYPOINT ${@:1:$CMD_ARG_START}\033[39m was not found."
+    >&2 echo -e "We have displayed the help documentation for \033[36m$CLI_ENTRYPOINT ${@:1:$(($CMD_ARG_START-1))}\033[39m to assist you."
+    exit 3
+fi
+
+# If "--help" is passed as one of the arguments to the command, display help for this command.
+arg_i=0
+for arg in "${CMD_ARGS[@]}"; do
+    if [[ "${arg}" == "--help" ]]; then
+        # Remove the `--help` part from the command
+        unset "CMD_ARGS[$arg_i]"
+        CMD_ARGS=("${CMD_ARGS[@]}")
+
+        "$ROOT_DIR/help" "$0" "${@:1:$((CMD_ARG_START - 1))}" "${CMD_ARGS[@]}"
+        exit 3
+    fi
+    arg_i=$((arg_i+1))
+done
+
+# Execute the command and retrieve its exit code
+"$CMD_FILE" "${CMD_ARGS[@]}"
+EXIT_CODE=$?
+
+# If the command ends with an exit code of 3 (our "display help" code)
+# then display the help documentation for this command.
+if [[ $EXIT_CODE == 3 ]]; then
+    "$ROOT_DIR/help" "$0" "$@"
+fi
+
+# Exit with the same code as the command
+exit $EXIT_CODE

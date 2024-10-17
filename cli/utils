@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+
+COLOR_BLACK="\033[30m"
+COLOR_RED="\033[31m"
+COLOR_GREEN="\033[0;32m"
+COLOR_YELLOW="\033[33m"
+COLOR_BLUE="\033[34m"
+COLOR_MAGENTA="\033[35m"
+COLOR_CYAN="\033[36m"
+COLOR_LIGHT_GRAY="\033[37m"
+COLOR_DARK_GRAY="\033[38m"
+COLOR_NORMAL="\033[0m"
+BG_GREEN='\033[0;42m'
+DK_GREY='\033[0;90m'
+LG_BLUE='\033[0;94m'
+
+function bcli_trim_whitespace() {
+    # Function courtesy of http://stackoverflow.com/a/3352015
+    local var="$*"
+    var="${var#"${var%%[![:space:]]*}"}"   # remove leading whitespace characters
+    var="${var%"${var##*[![:space:]]}"}"   # remove trailing whitespace characters
+    echo -n "$var"
+}
+
+function bcli_show_header() {
+    echo -e "$(bcli_trim_whitespace "$(cat "$1/.name")")"
+    echo -e "${COLOR_CYAN}Version  ${COLOR_NORMAL}$(bcli_trim_whitespace "$(cat "$1/.version")")"
+    echo -e "${COLOR_CYAN}Author   ${COLOR_NORMAL}$(bcli_trim_whitespace "$(cat "$1/.author")")"
+}
+
+readonly LOG_FILE="/tmp/$(basename "$0").log"
+
+function info()    { echo -e "@${COLOR_CYAN}${ARMTEK_ENV:-}${COLOR_NORMAL}${COLOR_GREEN} [INFO]    ${COLOR_NORMAL}$*" ; }
+function warning() { echo -e "@${COLOR_CYAN}${ARMTEK_ENV:-}${COLOR_NORMAL}${COLOR_YELLOW} [WARNING] ${COLOR_NORMAL}$*" ;}
+function error()   { echo -e "@${COLOR_CYAN}${ARMTEK_ENV:-}${COLOR_NORMAL}${COLOR_MAGENTA} [ERROR]   ${COLOR_NORMAL}$*" ; }
+function fatal()   { echo -e "@${COLOR_CYAN}${ARMTEK_ENV:-}${COLOR_NORMAL}${COLOR_RED} [FATAL]   ${COLOR_NORMAL}$*" ; exit 1;}
+
+function cli_call() {
+    "$ROOT_DIR/cli" "$@"
+}
+
+function title_show() {
+
+    info ""
+    info "${COLOR_GREEN}############################### ${COLOR_NORMAL}"
+    info " ${COLOR_YELLOW}  $1  ${COLOR_NORMAL} "
+    info "${COLOR_GREEN}############################### ${COLOR_NORMAL}"
+    info ""
+}
+
+function if_cmd_dont_exist(){
+    if which $1 >/dev/null; then
+        echo "true"
+    else
+        fatal "[$1] not installed properly!"
+    fi
+}
+
+function OK(){
+    echo "[${COLOR_GREEN}OK${COLOR_NORMAL}]"
+}
+
+function yes_no(){
+    echo "${COLOR_NORMAL}[${COLOR_GREEN}y${COLOR_NORMAL}/${COLOR_RED}n${COLOR_NORMAL}]${COLOR_NORMAL}"
+}
+#echo "ROOT_DIR : $ROOT_DIR"
+
+app_name=`basename "$0"`
+
+if [ ! -f $ROOT_DIR/app/.name ]; then
+    warning "CLI-NAME :  ${COLOR_RED}$ROOT_DIR/app/.name${COLOR_NORMAL} not found --> create this file with value: [${COLOR_GREEN}$app_name${COLOR_NORMAL}]"
+    warning "CLI-NAME execute: ${COLOR_GREEN}echo \"$app_name\" > $ROOT_DIR/app/.name${COLOR_NORMAL}"
+    fatal "CLI-NAME need action from user"
+else
+    cli_name_app=`cat $ROOT_DIR/app/.name`
+    export cli_name_app
+    export DOCKER_CLI=$cli_name_app
+fi
+
+if [ ! -f $ROOT_DIR/app/.config ]; then
+    warning "CLI-CONFIG :  ${COLOR_RED}$ROOT_DIR/app/.config${COLOR_NORMAL} not found --> create this file with value: example [${COLOR_GREEN}odm${COLOR_NORMAL}]"
+    info "CLI-CONFIG : this value is unique for a pair project, same work for api/database project. It's use for locate [cli_].json"
+    warning "CLI-CONFIG execute: ${COLOR_GREEN}echo \"$(cat $ROOT_DIR/app/.name)\" > $ROOT_DIR/app/.config${COLOR_NORMAL}"
+    fatal "CLI-CONFIG need action from user"
+fi

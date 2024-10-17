@@ -1,0 +1,6 @@
+---
+- name: Deploy Kubernetes Cluster
+  hosts: all
+  become: yes
+  roles:
+    - kubernetes
