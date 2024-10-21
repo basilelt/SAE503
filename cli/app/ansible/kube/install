@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -uo pipefail
+IFS=$'\n\t'
+
+# Load utility methods
+. "$ROOT_DIR/utils"
+
+function cleanup() {
+    echo "Cleaning up..."
+}
+
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+    trap cleanup EXIT
+
+    path=`$cli_name_app zoptions rc read .dir`
+    cd "${path}"
+
+    info "Launching ansible playbook to install kubernetes on hosts"
+    source ".venv/bin/activate"
+    ansible-playbook -i kubernetes-playbook/inventory.yml kubernetes-playbook/deploy_kubernetes.yml
+fi

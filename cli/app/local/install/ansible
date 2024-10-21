@@ -31,4 +31,6 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     python3 -m venv .venv
     source .venv/bin/activate
     pip install ansible
+
+    ansible-galaxy install -r kubernetes-playbook/requirements.yml
 fi

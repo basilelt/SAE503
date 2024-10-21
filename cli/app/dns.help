@@ -1,0 +1,4 @@
+DNS related operations
+----------------------
+host
+host `ip` `domain.name`
