@@ -9,4 +9,4 @@ https://hangarcdn.papermc.io/plugins/ViaVersion/ViaBackwards/versions/5.0.4/PAPE
 https://hangarcdn.papermc.io/plugins/ViaVersion/ViaRewind/versions/4.0.3/PAPER/ViaRewind-4.0.3.jar
 https://github.com/Cubxity/UnifiedMetrics/releases/download/v0.3.8/unifiedmetrics-platform-bukkit-0.3.8.jar
 https://github.com/EssentialsX/Essentials/releases/download/2.20.1/EssentialsX-2.20.1.jar
-https://www.spigotmc.org/resources/vault.34315/download?version=344916
+https://github.com/MilkBowl/Vault/releases/download/1.7.3/Vault.jar
