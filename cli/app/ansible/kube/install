@@ -17,5 +17,5 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
 
     info "Launching ansible playbook to install kubernetes on hosts"
     source ".venv/bin/activate"
-    ansible-playbook -i kubernetes-playbook/inventory.yml kubernetes-playbook/deploy_kubernetes.yml
+    ansible-playbook -i kubernetes-playbook/inventory.yml kubernetes-playbook/deploy_kubernetes.yml --ask-vault-pass
 fi

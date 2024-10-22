@@ -23,6 +23,6 @@ all:
     ansible_become: yes
     ansible_become_method: sudo
     ansible_become_user: root
-    ansible_become_pass: toto
-
+    ansible_become_pass: "{{ vault_ansible_become_pass }}"
+    
     #ansible_python_interpreter: /usr/bin/python3.11

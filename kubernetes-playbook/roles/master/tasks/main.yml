@@ -1,8 +1,20 @@
 ---
 - name: Initialize Kubernetes cluster
-  command: kubeadm init --pod-network-cidr={{ pod_network_cidr }}
+  command: >
+    kubeadm init
+    --pod-network-cidr={{ pod_network_cidr }}
+    --ignore-preflight-errors=all
+    --kubernetes-version=v{{ kubernetes_version }}
+    --v=5 # debug level
+    --cri-socket=unix:///var/run/containerd/containerd.sock
   args:
     creates: /etc/kubernetes/admin.conf
+  register: kubeadm_init_result
+
+# Debug output
+- name: Display kubeadm init output
+  debug:
+    var: kubeadm_init_result.stdout_lines
 
 - name: Create .kube directory for root user
   file:
@@ -16,10 +28,10 @@
     dest: /root/.kube/config
     remote_src: yes
 
-- name: Install Calico network plugin
-  command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+- name: Install Flannel network plugin
+  command: kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
   args:
-    creates: /etc/cni/net.d/10-calico.conflist
+    creates: /etc/cni/net.d/10-flannel.conflist
 
 - name: Get join command
   command: kubeadm token create --print-join-command

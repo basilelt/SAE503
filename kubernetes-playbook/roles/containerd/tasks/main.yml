@@ -1,0 +1,44 @@
+---
+- name: Install containerd
+  apt:
+    name:
+      - lsb-release
+      - socat
+      - containerd.io
+    state: present
+    update_cache: yes
+
+- name: Create containerd config directory
+  file:
+    path: /etc/containerd
+    state: directory
+
+- name: Configure containerd
+  copy:
+    content: |
+      version = 2
+      root = "/var/lib/containerd"
+      state = "/run/containerd"
+      
+      [plugins."io.containerd.grpc.v1.cri"]
+        systemd_cgroup = true
+      
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+        runtime_type = "io.containerd.runc.v2"
+      
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+        SystemdCgroup = true
+    dest: /etc/containerd/config.toml
+  notify: "Restart containerd"
+
+- name: Configure kubelet to use containerd
+  lineinfile:
+    path: /etc/default/kubelet
+    line: 'KUBELET_EXTRA_ARGS=--container-runtime=remote --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock'
+    create: yes
+
+- name: Restart kubelet
+  systemd:
+    name: kubelet
+    state: restarted
+    daemon_reload: yes

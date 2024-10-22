@@ -60,7 +60,7 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     fi
 
     # Copy the SSH public key to the remote host
-    ssh-copy-id -i keys/id_rsa.pub "${ssh_user}@${ip_address}"
+    ssh-copy-id -o StrictHostKeyChecking=no -i keys/id_rsa.pub "${ssh_user}@${ip_address}"
 
     if [ $? -eq 0 ]; then
         echo "SSH key successfully copied to ${ssh_user}@${ip_address}"
@@ -74,7 +74,7 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     echo ""
 
     # Configure passwordless sudo for the SSH user using the provided password
-    echo "${sudo_pass}" | ssh "${ssh_user}@${ip_address}" "sudo -S bash -c \"echo '${ssh_user} ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/${ssh_user} && sudo chmod 440 /etc/sudoers.d/${ssh_user}\""
+    echo "${sudo_pass}" | ssh -o StrictHostKeyChecking=no "${ssh_user}@${ip_address}" "sudo -S bash -c \"echo '${ssh_user} ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/${ssh_user} && sudo chmod 440 /etc/sudoers.d/${ssh_user}\""
 
     if [ $? -eq 0 ]; then
         echo "Passwordless sudo configured for user '${ssh_user}' on ${ip_address}"
