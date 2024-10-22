@@ -3,6 +3,7 @@ set -uo pipefail
 IFS=$'\n\t'
 
 # Load utility methods
+# shellcheck disable=SC1091
 . "$ROOT_DIR/utils"
 
 function cleanup() {
@@ -53,11 +54,11 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
 
     # Prompt user for DNS entry details if not provided as arguments
     if [[ -z "$ip_address" ]]; then
-        read -p "Enter the IP address: " ip_address
+        read -r -p "Enter the IP address: " ip_address
     fi
 
     if [[ -z "$hostname" ]]; then
-        read -p "Enter the hostname: " hostname
+        read -r -p "Enter the hostname: " hostname
     fi
 
     # Validate IP address format
@@ -68,7 +69,7 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     # Check if the entry already exists
     if grep -q "$hostname" "$HOSTS_FILE"; then
         warn "An entry for $hostname already exists in $HOSTS_FILE"
-        read -p "Do you want to update it? (y/n): " update_choice
+        read -r -p "Do you want to update it? (y/n): " update_choice
         if [[ $update_choice == "y" || $update_choice == "Y" ]]; then
             sudo sed -i '' "/$hostname/d" "$HOSTS_FILE"
         else
@@ -78,10 +79,7 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     fi
 
     # Add the new entry to the hosts file
-    echo "Adding entry to $HOSTS_FILE..."
-    echo "$ip_address $hostname" | sudo tee -a "$HOSTS_FILE" > /dev/null
-
-    if [ $? -eq 0 ]; then
+    if sudo tee -a "$HOSTS_FILE" > /dev/null <<< "$ip_address $hostname"; then
         info "Successfully added $hostname to $HOSTS_FILE"
     else
         fatal "Failed to add entry to $HOSTS_FILE"

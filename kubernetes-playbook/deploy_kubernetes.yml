@@ -1,7 +1,7 @@
 ---
 - name: Deploy Kubernetes Cluster
   hosts: all
-  become: yes
+  become: true
 
   roles:
     - common
@@ -10,14 +10,14 @@
 
 - name: Configure Kubernetes Master
   hosts: masters
-  become: yes
+  become: true
 
   roles:
     - master
 
 - name: Join Kubernetes Workers
   hosts: workers
-  become: yes
+  become: true
 
   roles:
     - worker

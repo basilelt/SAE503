@@ -26,8 +26,8 @@ esac
 echo -e ""
 echo -e ""
 
-pwd=`pwd`
-cd cli
+pwd=$(pwd)
+cd cli || exit 1
 
 cli_name="$name"
 extension=""
@@ -77,9 +77,9 @@ sudo ./cli zoptions dependencies "$cli_name"
 
 cd ..
 
-$cli_name zoptions rc init $projet_name $name
+$cli_name zoptions rc init "$projet_name" "$name"
 
-cd ~
+cd ~ || exit 1
 
 cmd1="source ${pwd}/cli/complete"
 cmd2="complete -F _bash_cli $name-api"
@@ -110,7 +110,9 @@ fi
 
 # Source the appropriate configuration file
 if [ -n "$BASH_VERSION" ]; then
+    # shellcheck source=/dev/null
     source "$target"
 elif [ -n "$ZSH_VERSION" ]; then
+    # shellcheck source=/dev/null
     source "$zsh_target"
 fi

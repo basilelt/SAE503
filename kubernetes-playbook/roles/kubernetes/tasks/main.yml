@@ -1,17 +1,23 @@
 ---
+- name: Check swap status
+  ansible.builtin.command: swapon --show
+  register: swap_status
+  changed_when: false
+
 - name: Disable swap
-  command: swapoff -a
-  when: ansible_swaptotal_mb > 0
+  ansible.builtin.command: swapoff -a
+  when: swap_status.stdout != ""
+  changed_when: swap_status.stdout != ""
 
 - name: Remove swap entry from /etc/fstab
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/fstab
     regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
     line: '# \1'
-    backrefs: yes
+    backrefs: true
 
 - name: Enable kernel modules
-  modprobe:
+  ansible.builtin.modprobe:
     name: "{{ item }}"
     state: present
   loop:
@@ -19,52 +25,52 @@
     - br_netfilter
 
 - name: Add kernel modules to /etc/modules-load.d/
-  copy:
+  ansible.builtin.copy:
     content: |
       overlay
       br_netfilter
     dest: /etc/modules-load.d/k8s.conf
+    mode: '0644'
 
 - name: Set sysctl params
-  sysctl:
+  ansible.builtin.sysctl:
     name: "{{ item.name }}"
     value: "{{ item.value }}"
     state: present
-    reload: yes
+    reload: true
   loop:
     - { name: "net.bridge.bridge-nf-call-iptables", value: "1" }
     - { name: "net.bridge.bridge-nf-call-ip6tables", value: "1" }
     - { name: "net.ipv4.ip_forward", value: "1" }
 
 - name: Ensure kubelet service directory exists
-  file:
+  ansible.builtin.file:
     path: /etc/systemd/system/kubelet.service.d
     state: directory
     mode: '0755'
 
-- name: Create 10-kubeadm.conf if it doesn't exist
-  copy:
-    content: |
-      [Service]
-      Environment="KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf"
+- name: Create 10-kubeadm.conf using a template
+  ansible.builtin.template:
+    src: 10-kubeadm.conf.j2
     dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-    force: no
+    mode: '0644'
 
 - name: Create kubelet config file
-  template:
+  ansible.builtin.template:
     src: kubelet-config.yaml.j2
     dest: /var/lib/kubelet/config.yaml
     mode: '0644'
 
 - name: Update kubelet service file
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
     line: 'Environment="KUBELET_CONFIG_ARGS=--config=/var/lib/kubelet/config.yaml"'
     insertafter: '^Environment="KUBELET_KUBECONFIG_ARGS'
-    create: yes
+    create: true
+    mode: '0644'
 
 - name: Restart kubelet
-  systemd:
+  ansible.builtin.systemd:
     name: kubelet
     state: restarted
-    daemon_reload: yes
+    daemon_reload: true

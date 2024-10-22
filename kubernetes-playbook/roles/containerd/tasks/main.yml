@@ -1,44 +1,35 @@
 ---
 - name: Install containerd
-  apt:
+  ansible.builtin.apt:
     name:
       - lsb-release
       - socat
       - containerd.io
     state: present
-    update_cache: yes
+    update_cache: true
 
 - name: Create containerd config directory
-  file:
+  ansible.builtin.file:
     path: /etc/containerd
     state: directory
+    mode: '0755'
 
 - name: Configure containerd
-  copy:
-    content: |
-      version = 2
-      root = "/var/lib/containerd"
-      state = "/run/containerd"
-      
-      [plugins."io.containerd.grpc.v1.cri"]
-        systemd_cgroup = true
-      
-      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-        runtime_type = "io.containerd.runc.v2"
-      
-      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-        SystemdCgroup = true
+  ansible.builtin.template:
+    src: containerd_config.toml.j2
     dest: /etc/containerd/config.toml
+    mode: '0644'
   notify: "Restart containerd"
 
 - name: Configure kubelet to use containerd
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/default/kubelet
     line: 'KUBELET_EXTRA_ARGS=--container-runtime=remote --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock'
-    create: yes
+    create: true
+    mode: '0644'
 
 - name: Restart kubelet
-  systemd:
+  ansible.builtin.systemd:
     name: kubelet
     state: restarted
-    daemon_reload: yes
+    daemon_reload: true

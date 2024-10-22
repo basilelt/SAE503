@@ -3,6 +3,7 @@ set -uo pipefail
 IFS=$'\n\t'
 
 # Load utility methods
+# shellcheck disable=SC1091
 . "$ROOT_DIR/utils"
 
 function cleanup() {
@@ -29,8 +30,12 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
 
     # Create a virtual environment
     python3 -m venv .venv
+    
+    # shellcheck disable=SC1091
     source .venv/bin/activate
-    pip install ansible
+
+    pip install ansible --no-input
+    pip install ansible-creator --no-input
 
     ansible-galaxy install -r kubernetes-playbook/requirements.yml
 fi
