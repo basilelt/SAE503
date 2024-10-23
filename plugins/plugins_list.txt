@@ -10,3 +10,4 @@ https://hangarcdn.papermc.io/plugins/ViaVersion/ViaRewind/versions/4.0.3/PAPER/V
 https://github.com/Cubxity/UnifiedMetrics/releases/download/v0.3.8/unifiedmetrics-platform-bukkit-0.3.8.jar
 https://github.com/EssentialsX/Essentials/releases/download/2.20.1/EssentialsX-2.20.1.jar
 https://github.com/MilkBowl/Vault/releases/download/1.7.3/Vault.jar
+https://github.com/dmulloy2/ProtocolLib/releases/download/5.3.0/ProtocolLib.jar
