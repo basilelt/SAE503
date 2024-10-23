@@ -1,9 +1,12 @@
 version = 2
-root = "/var/lib/containerd"
-state = "/run/containerd"
 
 [plugins."io.containerd.grpc.v1.cri"]
+  sandbox_image = "registry.k8s.io/pause:3.9"
   systemd_cgroup = true
+
+[plugins."io.containerd.grpc.v1.cri".containerd]
+  no_pivot = false
+  snapshotter = "overlayfs"
 
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
   runtime_type = "io.containerd.runc.v2"

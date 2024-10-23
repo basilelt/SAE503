@@ -19,7 +19,12 @@
     src: containerd_config.toml.j2
     dest: /etc/containerd/config.toml
     mode: '0644'
-  notify: "Restart containerd"
+
+- name: Restart containerd
+  ansible.builtin.systemd:
+    name: containerd
+    state: restarted
+    daemon_reload: true
 
 - name: Configure kubelet to use containerd
   ansible.builtin.lineinfile:

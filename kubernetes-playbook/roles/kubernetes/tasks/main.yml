@@ -55,6 +55,14 @@
     dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
     mode: '0644'
 
+- name: Deploy kubeadm-flags.env
+  ansible.builtin.template:
+    src: templates/kubeadm-flags.env.j2
+    dest: /var/lib/kubelet/kubeadm-flags.env
+    owner: root
+    group: root
+    mode: '0644'
+
 - name: Create kubelet config file
   ansible.builtin.template:
     src: kubelet-config.yaml.j2
