@@ -1,15 +1,23 @@
 version = 2
 
 [plugins."io.containerd.grpc.v1.cri"]
+  disable_tcp_service = true
+  stream_server_address = "127.0.0.1"
+  stream_server_port = "0"
+  enable_selinux = false
   sandbox_image = "registry.k8s.io/pause:3.9"
-  systemd_cgroup = true
+  max_container_log_line_size = 16384
 
 [plugins."io.containerd.grpc.v1.cri".containerd]
-  no_pivot = false
   snapshotter = "overlayfs"
+  default_runtime_name = "runc"
 
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
   runtime_type = "io.containerd.runc.v2"
 
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
   SystemdCgroup = true
+
+[plugins."io.containerd.grpc.v1.cri".cni]
+  bin_dir = "/opt/cni/bin"
+  conf_dir = "/etc/cni/net.d"

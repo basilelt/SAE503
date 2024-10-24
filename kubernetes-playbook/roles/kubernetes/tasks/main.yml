@@ -17,7 +17,7 @@
     backrefs: true
 
 - name: Enable kernel modules
-  ansible.builtin.modprobe:
+  modprobe:
     name: "{{ item }}"
     state: present
   loop:
@@ -76,9 +76,4 @@
     insertafter: '^Environment="KUBELET_KUBECONFIG_ARGS'
     create: true
     mode: '0644'
-
-- name: Restart kubelet
-  ansible.builtin.systemd:
-    name: kubelet
-    state: restarted
-    daemon_reload: true
+  notify: Restart kubelet

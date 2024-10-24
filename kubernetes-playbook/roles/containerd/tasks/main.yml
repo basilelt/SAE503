@@ -19,22 +19,11 @@
     src: containerd_config.toml.j2
     dest: /etc/containerd/config.toml
     mode: '0644'
-
-- name: Restart containerd
-  ansible.builtin.systemd:
-    name: containerd
-    state: restarted
-    daemon_reload: true
+  notify: Restart containerd
 
 - name: Configure kubelet to use containerd
-  ansible.builtin.lineinfile:
-    path: /etc/default/kubelet
-    line: 'KUBELET_EXTRA_ARGS=--container-runtime=remote --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock'
-    create: true
+  ansible.builtin.template:
+    src: kubelet.j2
+    dest: /etc/default/kubelet
     mode: '0644'
-
-- name: Restart kubelet
-  ansible.builtin.systemd:
-    name: kubelet
-    state: restarted
-    daemon_reload: true
+  notify: Restart kubelet
