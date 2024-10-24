@@ -6,18 +6,18 @@
   roles:
     - common
     - containerd
-    - kubernetes
+#    - kubernetes
 
-- name: Configure Kubernetes Master
-  hosts: masters
-  become: true
+# - name: Configure Kubernetes Master
+#   hosts: masters
+#   become: true
 
-  roles:
-    - master
+#   roles:
+#     - master
 
-- name: Join Kubernetes Workers
-  hosts: workers
-  become: true
+# - name: Join Kubernetes Workers
+#   hosts: workers
+#   become: true
 
-  roles:
-    - worker
+#   roles:
+#     - worker
