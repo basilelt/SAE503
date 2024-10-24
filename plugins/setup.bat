@@ -5,7 +5,20 @@ set SERVER_DIR=test_server
 set EULA_FILE=%SERVER_DIR%\eula.txt
 set CONFIG_FILE=%SERVER_DIR%\plugins\Plan\config.yml
 set BLUEMAP_CONFIG_FILE=%SERVER_DIR%\plugins\BlueMap\core.conf
+set PROMETHEUS_YML=%SERVER_DIR%\plugins\UnifiedMetrics\driver\prometheus.yml
 
+setlocal enabledelayedexpansion
+
+REM Define the new port number
+set NEW_PORT=9300
+
+REM Path to the prometheus.yml file
+
+
+REM Use PowerShell to update the port in prometheus.yml
+powershell -Command "((Get-Content -path !PROMETHEUS_YML! -Raw) -replace 'port: \d+', 'port: !NEW_PORT!') | Set-Content -Path !PROMETHEUS_YML!"
+
+echo Port updated to !NEW_PORT! in !PROMETHEUS_YML!
 REM Get the current date and time
 for /f "tokens=1-5 delims=/-. " %%d in ("%date% %time%") do (
     set curdate=%%d-%%e-%%f
