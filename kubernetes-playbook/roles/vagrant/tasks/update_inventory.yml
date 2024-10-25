@@ -1,0 +1,21 @@
+---
+- name: Get existing host name
+  ansible.builtin.set_fact:
+    existing_host_name: "{{ groups['local'][vagrant_node_type + 's'][0] }}"
+
+- name: Update inventory with Vagrant VM
+  ansible.builtin.add_host:
+    name: "{{ existing_host_name }}-vagrant"
+    ansible_host: "{{ vagrant_vm_ip }}"
+    groups:
+      - "vm"
+      - "{{ vagrant_node_type }}s-vagrant"
+
+- name: Update /etc/hosts on localhost
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: "{{ vagrant_vm_ip }} {{ existing_host_name }}-vagrant.local"
+    regexp: ".*{{ existing_host_name }}-vagrant.local$"
+    state: present
+  become: true
+  delegate_to: localhost

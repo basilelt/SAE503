@@ -1,28 +1,20 @@
 ---
 all:
   children:
-    masters:
-      hosts:
-        master:
-          ansible_host: master.local
-    
-#    workers:
-#      hosts:
-#        worker1:
-#          ansible_host: worker1.local
-#        worker2:
-#          ansible_host: worker2.local
-#        worker3:
-#          ansible_host: worker3.local
+    local:
+      masters:
+        hosts:
+          master:
+            ansible_host: master.local
 
-  vars:
-    ansible_user: toto
-    ansible_ssh_private_key_file: ./keys/id_rsa
-    ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+      workers:
+        hosts:
+          worker1:
+            ansible_host: worker1.local
 
-    ansible_become: yes
-    ansible_become_method: sudo
-    ansible_become_user: root
-    ansible_become_pass: "{{ vault_ansible_become_pass }}"
-    
-    ansible_python_interpreter: /usr/bin/python3.11
+    vm:
+      masters-vagrant:
+        hosts:
+
+      workers-vagrant:
+        hosts:

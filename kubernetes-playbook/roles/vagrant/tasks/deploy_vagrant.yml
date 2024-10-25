@@ -1,0 +1,27 @@
+---
+- name: Deploy vagrant
+  community.general.vagrant:
+    cmd: up
+    project_path: "{{ vagrant_file_path }}"
+  register: vagrant_result
+
+- name: Get Vagrant VM IP address
+  ansible.builtin.command: vagrant ssh -c "hostname -I | cut -d' ' -f1"
+  args:
+    chdir: "{{ vagrant_file_path }}"
+  register: vagrant_ip
+  changed_when: false
+
+- name: Set fact for Vagrant IP
+  ansible.builtin.set_fact:
+    vagrant_vm_ip: "{{ vagrant_ip.stdout.strip() }}"
+
+- name: Debug Vagrant IP
+  ansible.builtin.debug:
+    var: vagrant_vm_ip
+
+- name: Send ssh key to Vagrant VM
+  ansible.builtin.copy:
+    src: ./keys/id_rsa
+    dest: "/home/{{ ansible_user }}/keys/id_rsa"
+    mode: '0600'

@@ -1,0 +1,12 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "{{ vagrant_custom_box_name }}"
+  config.vm.provider "{{ vagrant_node_vm_provider }}" do |vb|
+    vb.name = "{{ vagrant_node_type }}"
+    vb.gui = false
+    
+    config.vm.network "public_network", bridge: "{{ vagrant_bridge_interface | default('') }}", use_dhcp_assigned_default_route: true
+
+    vb.memory = "{{ vagrant_node_memory }}"
+    vb.cpus = {{ vagrant_node_cpu }}
+  end
+end

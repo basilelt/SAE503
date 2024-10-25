@@ -1,0 +1,15 @@
+# CursorRules
+
+# File Handling
+- Provide full files
+
+# Formatting
+- Do add in command or code responses unnecessary tabs or spaces
+
+# Ansible
+- Avoid adding unnecessary status checks in Ansible tasks
+- Provide direct commands to run on the host when possible instead of doing it in ansible
+- Use 'true' and 'false' instead of 'yes' and 'no' in Ansible YAML YML files
+
+# Language
+- Always respond in English

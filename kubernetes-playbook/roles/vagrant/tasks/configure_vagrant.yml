@@ -1,0 +1,12 @@
+---
+- name: Ensure Vagrant project directory exists
+  ansible.builtin.file:
+    path: "{{ vagrant_file_path }}"
+    state: directory
+    mode: '0755'
+
+- name: Create Vagrantfile
+  ansible.builtin.template:
+    src: Vagrantfile.j2
+    dest: "{{ vagrant_file_path }}/Vagrantfile"
+    mode: '0644'

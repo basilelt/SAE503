@@ -1,0 +1,29 @@
+---
+- name: Create HashiCorp apt keyring directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download HashiCorp GPG key
+  ansible.builtin.get_url:
+    url: "https://apt.releases.hashicorp.com/gpg"
+    dest: /tmp/hashicorp-release.key
+    mode: '0644'
+
+- name: Dearmor and store HashiCorp GPG key
+  ansible.builtin.command:
+    cmd: gpg --dearmor -o /etc/apt/keyrings/hashicorp-archive-keyring.gpg /tmp/hashicorp-release.key
+    creates: /etc/apt/keyrings/hashicorp-archive-keyring.gpg
+
+- name: Add HashiCorp repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
+    state: present
+    filename: hashicorp
+
+- name: Update apt cache and install Vagrant
+  ansible.builtin.apt:
+    name: vagrant
+    state: present
+    update_cache: true

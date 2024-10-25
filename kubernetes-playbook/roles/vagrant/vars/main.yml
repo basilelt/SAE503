@@ -1,0 +1,8 @@
+---
+vagrant_temp_path: "/tmp/vagrant_update"
+vagrant_custom_box_name: "custom_debian"
+vagrant_file_path: "/home/{{ ansible_user }}/vagrant_projects/kubernetes"
+vagrant_node_cpu: 4
+vagrant_node_memory: 8192
+vagrant_node_disk: 20
+vagrant_node_vm_provider: virtualbox

@@ -1,0 +1,87 @@
+- name: Ensure Vagrant temporary directory exists
+  ansible.builtin.file:
+    path: "{{ vagrant_temp_path }}"
+    state: directory
+    mode: '0755'
+
+- name: Create temporary Vagrantfile for box update
+  ansible.builtin.template:
+    src: UpdateVagrantfile.j2
+    dest: "{{ vagrant_temp_path }}/Vagrantfile"
+    mode: '0644'
+
+- name: Bring up the Vagrant box for updates
+  community.general.vagrant:
+    cmd: up
+    project_path: "{{ vagrant_temp_path }}"
+
+- name: Update and clean the Vagrant box
+  block:
+    - name: Update package cache
+      ansible.builtin.command:
+        cmd: vagrant ssh -c "sudo apt-get update"
+        chdir: "{{ vagrant_temp_path }}"
+      changed_when: false
+
+    - name: Upgrade packages
+      ansible.builtin.command:
+        cmd: vagrant ssh -c "sudo apt-get upgrade -y"
+        chdir: "{{ vagrant_temp_path }}"
+      register: upgrade_result
+      changed_when: upgrade_result.stdout is search('upgraded')
+
+    - name: Perform dist-upgrade
+      ansible.builtin.command:
+        cmd: vagrant ssh -c "sudo apt-get dist-upgrade -y"
+        chdir: "{{ vagrant_temp_path }}"
+      register: dist_upgrade_result
+      changed_when: dist_upgrade_result.stdout is search('upgraded')
+
+    - name: Remove unnecessary packages
+      ansible.builtin.command:
+        cmd: vagrant ssh -c "sudo apt-get autoremove -y"
+        chdir: "{{ vagrant_temp_path }}"
+      register: autoremove_result
+      changed_when: autoremove_result.stdout is search('removed')
+
+    - name: Clean package cache
+      ansible.builtin.command:
+        cmd: vagrant ssh -c "sudo apt-get clean"
+        chdir: "{{ vagrant_temp_path }}"
+      changed_when: false
+
+    - name: Zero out empty space
+      ansible.builtin.command:
+        cmd: vagrant ssh -c "sudo dd if=/dev/zero of=/EMPTY bs=1M || true && sudo rm -f /EMPTY && sudo sync"
+        chdir: "{{ vagrant_temp_path }}"
+      changed_when: false
+
+- name: Check if the packaged box already exists
+  ansible.builtin.stat:
+    path: "{{ vagrant_temp_path }}/{{ vagrant_custom_box_name }}.box"
+  register: box_file
+
+- name: Package the updated box
+  ansible.builtin.command:
+    cmd: vagrant package --output {{ vagrant_custom_box_name }}.box
+    chdir: "{{ vagrant_temp_path }}"
+  when: not box_file.stat.exists
+  register: package_result
+  changed_when: package_result.rc == 0
+
+- name: Add the custom box to Vagrant
+  community.general.vagrant_box:
+    name: "{{ vagrant_custom_box_name }}"
+    source: "{{ vagrant_temp_path }}/{{ vagrant_custom_box_name }}.box"
+    state: present
+
+- name: Destroy the temporary Vagrant machine
+  community.general.vagrant:
+    cmd: destroy
+    force_stop: true
+    project_path: "{{ vagrant_temp_path }}"
+
+- name: Remove the temporary Vagrantfile
+  ansible.builtin.file:
+    path: "{{ vagrant_temp_path }}/Vagrantfile"
+    state: absent
