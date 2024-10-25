@@ -1,2 +1,2 @@
 ---
-vagrant_node_type: master
+vagrant_node_type: worker

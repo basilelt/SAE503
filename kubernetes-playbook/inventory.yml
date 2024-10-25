@@ -2,19 +2,21 @@
 all:
   children:
     local:
-      masters:
-        hosts:
-          master:
-            ansible_host: master.local
-
-      workers:
-        hosts:
-          worker1:
-            ansible_host: worker1.local
-
+      children:
+        masters:
+          hosts:
+            master:
+              ansible_host: master.local
+        
+        # workers:
+        #   hosts:
+        #     worker1:
+        #       ansible_host: worker1.local
+    
     vm:
-      masters-vagrant:
-        hosts:
-
-      workers-vagrant:
-        hosts:
+      children:
+        masters_vagrant:
+          hosts:
+        
+        # workers_vagrant:
+        #   hosts:

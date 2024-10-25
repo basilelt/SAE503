@@ -1,4 +1,12 @@
 ---
+- name: Include master vars
+  ansible.builtin.include_vars: masters.yml
+  when: "'masters' in groups and inventory_hostname in groups['masters']"
+
+- name: Include worker vars
+  ansible.builtin.include_vars: workers.yml
+  when: "'workers' in groups and inventory_hostname in groups['workers']"
+
 - name: Install vagrant
   ansible.builtin.include_tasks: install_vagrant.yml
 

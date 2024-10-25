@@ -1,28 +1,24 @@
 ---
 - name: Deploy Vagrant VMs
   hosts: local
-  become: true
   roles:
     - vagrant
 
 # - name: Deploy Kubernetes
 #   hosts: vm
-#   become: true
 #   roles:
 #     - common
 #     - containerd
 #     - kubernetes
 
 # - name: Configure Kubernetes Master
-#   hosts: masters-vagrant
-#   become: true
+#   hosts: masters_vagrant
 
 #   roles:
 #     - master
 
 # - name: Join Kubernetes Workers
-#   hosts: workers-vagrant
-#   become: true
+#   hosts: workers_vagrant
 #
 #   roles:
 #     - worker

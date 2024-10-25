@@ -1,29 +1,57 @@
 ---
 - name: Create HashiCorp apt keyring directory
+  become: true
   ansible.builtin.file:
     path: /etc/apt/keyrings
     state: directory
     mode: '0755'
 
 - name: Download HashiCorp GPG key
+  become: true
   ansible.builtin.get_url:
     url: "https://apt.releases.hashicorp.com/gpg"
     dest: /tmp/hashicorp-release.key
     mode: '0644'
 
 - name: Dearmor and store HashiCorp GPG key
+  become: true
   ansible.builtin.command:
     cmd: gpg --dearmor -o /etc/apt/keyrings/hashicorp-archive-keyring.gpg /tmp/hashicorp-release.key
     creates: /etc/apt/keyrings/hashicorp-archive-keyring.gpg
 
 - name: Add HashiCorp repository
+  become: true
   ansible.builtin.apt_repository:
     repo: "deb [signed-by=/etc/apt/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
     state: present
     filename: hashicorp
 
-- name: Update apt cache and install Vagrant
+- name: Install Debian Fasttrack's archive keyring
+  become: true
   ansible.builtin.apt:
-    name: vagrant
+    name: fasttrack-archive-keyring
+    state: present
+
+- name: Add Debian Fasttrack repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "deb https://fasttrack.debian.net/debian-fasttrack/ bookworm-fasttrack main contrib"
+    state: present
+    filename: fasttrack
+
+- name: Add Debian Backports Staging repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "deb https://fasttrack.debian.net/debian-fasttrack/ bookworm-backports-staging main contrib"
+    state: present
+    filename: backports
+
+- name: Update apt cache and install Vagrant and VirtualBox
+  become: true
+  ansible.builtin.apt:
+    name:
+      - vagrant
+      - virtualbox
+      - virtualbox-ext-pack
     state: present
     update_cache: true

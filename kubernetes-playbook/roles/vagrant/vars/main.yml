@@ -6,3 +6,5 @@ vagrant_node_cpu: 4
 vagrant_node_memory: 8192
 vagrant_node_disk: 20
 vagrant_node_vm_provider: virtualbox
+# To change in function of the PC used
+vagrant_bridge_interface: "wlp3s0"

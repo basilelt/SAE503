@@ -5,6 +5,22 @@
     state: directory
     mode: '0755'
 
+- name: Generate SSH key pair on Ansible control node
+  openssh_keypair:
+    path: "{{ playbook_dir }}/../keys/id_rsa_vagrant"
+    type: rsa
+    size: 4096
+    state: present
+  delegate_to: localhost
+  run_once: true
+
+- name: Read the content of the public key
+  ansible.builtin.slurp:
+    src: "{{ playbook_dir }}/../keys/id_rsa_vagrant.pub"
+  register: public_key_content
+  delegate_to: localhost
+  run_once: true
+
 - name: Create Vagrantfile
   ansible.builtin.template:
     src: Vagrantfile.j2
