@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -uo pipefail
+IFS=$'\n\t'
+
+# Load utility methods
+# shellcheck disable=SC1091
+. "$ROOT_DIR/utils"
+
+function cleanup() {
+    echo "Cleaning up..."
+}
+
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+    trap cleanup EXIT
+
+    # Check if virtualbox is installed
+    if ! command -v virtualbox &> /dev/null; then
+        info "virtualbox is not installed. Please install virtualbox first."
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            info "Installing virtualbox using Homebrew"
+            brew install virtualbox
+        elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+            info "Installing virtualbox using apt-get"
+            wget -O - https://www.virtualbox.org/download/oracle_vbox_2016.asc | sudo apt-key add -
+            echo "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" | sudo tee /etc/apt/sources.list.d/virtualbox.list
+            sudo apt-get update && sudo apt-get install -y virtualbox-7.1
+        else
+            fatal "Unsupported operating system: $OSTYPE"
+        fi
+    fi
+fi

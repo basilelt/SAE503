@@ -2,6 +2,11 @@
     "ansible.python.interpreterPath": "/Users/basilelt/Documents/Github/SAE503/.venv/bin/python",
     "cSpell.words": [
         "chdir",
-        "lineinfile"
+        "cpus",
+        "keygen",
+        "lineinfile",
+        "venv",
+        "vmnumber",
+        "zoptions"
     ]
 }
