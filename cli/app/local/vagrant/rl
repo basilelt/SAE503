@@ -28,5 +28,6 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     fi
 
     info "Reload Vagrant VMs..."
-    vagrant reload
+    vagrant halt
+    vagrant reload --provision
 fi

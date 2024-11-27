@@ -9,6 +9,28 @@
     state: present
     update_cache: true
 
+- name: Add Docker official GPG key
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+
+- name: Add Docker repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/debian bullseye stable"
+    state: present
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install Docker packages
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: present
+
 - name: Create Kubernetes apt keyring directory
   ansible.builtin.file:
     path: /etc/apt/keyrings
@@ -53,7 +75,7 @@
     - kubeadm
     - kubectl
 
-- name: Enable kubelet service
+- name: Enable and start kubelet service
   ansible.builtin.systemd:
     name: kubelet
     enabled: true

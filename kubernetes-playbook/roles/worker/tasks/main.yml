@@ -1,5 +1,5 @@
 ---
 - name: Join cluster
-  ansible.builtin.command: "{{ hostvars['master']['join_command'] }} --ignore-preflight-errors=all"
+  ansible.builtin.command: "{{ hostvars['master']['join_command'] }}"
   args:
     creates: /etc/kubernetes/kubelet.conf

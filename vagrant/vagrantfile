@@ -6,14 +6,18 @@ Vagrant.configure("2") do |config|
 
     # SSH Configuration
     config.ssh.username = "vagrant"
-    # config.ssh.private_key_path = "~/.ssh/vagrant_common_key"
+    config.ssh.insert_key = false
 
-    # Provisioning to add the public key
+    # Provisioning to add the public key and configure sudoers
     config.vm.provision "shell", inline: <<-SHELL
         mkdir -p /home/vagrant/.ssh
         echo "#{File.read(File.expand_path('~/.ssh/vagrant_common_key.pub'))}" >> /home/vagrant/.ssh/authorized_keys
         chown -R vagrant:vagrant /home/vagrant/.ssh
         chmod 600 /home/vagrant/.ssh/authorized_keys
+
+        # Configure passwordless sudo for vagrant user
+        echo "vagrant ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/vagrant
+        sudo chmod 440 /etc/sudoers.d/vagrant
     SHELL
 
     # Master node
@@ -21,6 +25,9 @@ Vagrant.configure("2") do |config|
       master.vm.box = "debian/bullseye64"
       master.vm.hostname = "master"
       master.vm.network "private_network", ip: "192.168.56.10"
+
+      # Forward SSH port
+      master.vm.network "forwarded_port", guest: 22, host: 2210, id: "ssh_master"
 
       # Set custom CPU and RAM here
       master.vm.provider "virtualbox" do |vb|
@@ -36,6 +43,9 @@ Vagrant.configure("2") do |config|
         slave.vm.box = "debian/bullseye64"
         slave.vm.hostname = "slave#{i}"
         slave.vm.network "private_network", ip: "192.168.56.1#{i}"
+
+        # Forward SSH port
+        slave.vm.network "forwarded_port", guest: 22, host: "221#{i}", id: "ssh_slave#{i}"
         
         # Set custom CPU and RAM here
         slave.vm.provider "virtualbox" do |vb|

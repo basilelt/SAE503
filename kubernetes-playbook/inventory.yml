@@ -3,8 +3,16 @@ all:
   children:
     vm:
       children:
-        masters_vagrant:
+        masters:
           hosts:
-        
-        workers_vagrant:
+            master:
+              ansible_port: 2210
+
+        slaves:
           hosts:
+            slave1:
+              ansible_port: 2211
+            slave2:
+              ansible_port: 2212
+            slave3:
+              ansible_port: 2213

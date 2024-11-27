@@ -1,3 +1,5 @@
 ---
 ansible_user: vagrant
-ansible_ssh_private_key_file: ssh-keygen -t rsa -b 2048 -f ~/.ssh/vagrant_common_key -N ""
+ansible_ssh_private_key_file: ~/.ssh/vagrant_common_key
+ansible_python_interpreter: /usr/bin/python3.9
+ansible_host: 127.0.0.1

@@ -21,12 +21,82 @@
   ansible.builtin.command: >
     kubeadm init
     --pod-network-cidr={{ master_pod_network_cidr }}
-    --ignore-preflight-errors=all
     --kubernetes-version=v{{ master_kubernetes_version }}
     --cri-socket=unix:///var/run/containerd/containerd.sock
   register: kubeadm_init
   when: not k8s_initialized.stat.exists
   changed_when: kubeadm_init.rc == 0
+
+- name: Ensure kubelet is enabled
+  ansible.builtin.systemd:
+    name: kubelet
+    enabled: true
+    state: started
+
+- name: Install cgroup packages
+  ansible.builtin.package:
+    name:
+      - libcgroup-tools
+      - cgroupfs-mount
+    state: present
+
+- name: Enable and configure cgroups
+  ansible.builtin.command: >
+    sudo cgcreate -g cpu,memory:/
+  ignore_errors: yes
+
+- name: Configure system for cgroups
+  ansible.builtin.copy:
+    dest: /etc/systemd/system.conf
+    content: |
+      [Manager]
+      DefaultControllers=cpu memory
+  notify:
+    - Restart systemd
+
+- name: Ensure cgroup directories exist
+  ansible.builtin.file:
+    path: "/sys/fs/cgroup/{{ item }}"
+    state: directory
+  loop:
+    - cpu
+    - memory
+
+- name: Mount cgroup controllers
+  ansible.builtin.shell: |
+    if ! mountpoint -q "/sys/fs/cgroup/{{ item }}"; then
+      mount -t cgroup -o {{ item }} cgroup "/sys/fs/cgroup/{{ item }}"
+    fi
+  args:
+    executable: /bin/bash
+  loop:
+    - cpu
+    - memory
+
+- name: Restart systemd to apply cgroup changes
+  ansible.builtin.systemd:
+    name: systemd
+    state: restarted
+  when: ansible_systemd.version is defined
+
+- name: Verify cgroups are enabled
+  ansible.builtin.command: lssubsys -am
+  register: cgroups
+
+- name: Fail if required cgroups are not enabled
+  ansible.builtin.fail:
+    msg: "Required cgroups are not enabled."
+  when: "'cpu' not in cgroups.stdout or 'memory' not in cgroups.stdout"
+
+- name: Troubleshoot kubelet status
+  ansible.builtin.command: systemctl status kubelet
+  register: kubelet_status
+  failed_when: kubelet_status.rc != 0
+  ignore_errors: true
+
+- name: View kubelet logs
+  ansible.builtin.command: journalctl -xeu kubelet
+  when: kubelet_status.rc != 0
 
 - name: Create .kube directory for root user
   ansible.builtin.file:

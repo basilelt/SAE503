@@ -1,17 +1,17 @@
 ---
 - name: Deploy Kubernetes
-  hosts: master_vagrant
+  hosts: masters
   roles:
     - common
     - containerd
     - kubernetes
 
-# - name: Configure Kubernetes Master
-#   hosts: master_vagrant
-#   roles:
-#     - master
+- name: Configure Kubernetes Master
+  hosts: masters
+  roles:
+    - master
 
-# - name: Join Kubernetes Workers
-#   hosts: slaves_vagrant
-#   roles:
-#     - worker
+- name: Join Kubernetes Workers
+  hosts: slaves
+  roles:
+    - worker
