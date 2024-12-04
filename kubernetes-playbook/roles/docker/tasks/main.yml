@@ -1,0 +1,28 @@
+---
+- name: Remove old Docker packages
+  ansible.builtin.apt:
+    name:
+      - docker
+      - docker-engine
+      - docker.io
+    state: absent
+    purge: yes
+    update_cache: yes
+
+- name: Install docker.io
+  ansible.builtin.apt:
+    name:
+      - docker.io
+    state: present
+    update_cache: yes
+
+- name: Start Docker service
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Verify Docker installation
+  ansible.builtin.command: docker container ls
+  register: docker_verify
+  failed_when: docker_verify.rc != 0

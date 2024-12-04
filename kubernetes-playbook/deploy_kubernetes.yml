@@ -1,17 +1,35 @@
 ---
-- name: Deploy Kubernetes
-  hosts: masters
+- name: Prep system operations
+  hosts: all
+  become: yes
+  vars_files:
+    - vars/main.yml
   roles:
-    - common
-    - containerd
+    - system
+
+- name: Kubernetes Cluster Setup
+  hosts: all
+  become: yes
+  vars_files:
+    - vars/main.yml
+  roles:
+    - docker
     - kubernetes
 
-- name: Configure Kubernetes Master
-  hosts: masters
+- name: Initialize Kubernetes Master
+  hosts: master
+  become: yes
   roles:
-    - master
+    - kube_master
 
-- name: Join Kubernetes Workers
-  hosts: slaves
+- name: Install Calico CNI
+  hosts: master
+  become: yes
   roles:
-    - worker
+    - calico
+
+- name: Join Worker Nodes to Cluster
+  hosts: workers
+  become: yes
+  roles:
+    - kube_worker

@@ -1,79 +1,75 @@
----
-- name: Check swap status
-  ansible.builtin.command: swapon --show
-  register: swap_status
-  changed_when: false
+- name: Update apt repository
+  ansible.builtin.apt:
+    update_cache: yes
 
-- name: Disable swap
-  ansible.builtin.command: swapoff -a
-  when: swap_status.stdout != ""
-  changed_when: swap_status.stdout != ""
-
-- name: Remove swap entry from /etc/fstab
-  ansible.builtin.lineinfile:
-    path: /etc/fstab
-    regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
-    line: '# \1'
-    backrefs: true
-
-- name: Enable kernel modules
-  modprobe:
-    name: "{{ item }}"
+- name: Install prerequisites
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gpg
     state: present
-  loop:
-    - overlay
-    - br_netfilter
 
-- name: Add kernel modules to /etc/modules-load.d/
-  ansible.builtin.copy:
-    content: |
-      overlay
-      br_netfilter
-    dest: /etc/modules-load.d/k8s.conf
-    mode: '0644'
-
-- name: Set sysctl params
-  ansible.builtin.sysctl:
-    name: "{{ item.name }}"
-    value: "{{ item.value }}"
-    state: present
-    reload: true
-  loop:
-    - { name: "net.bridge.bridge-nf-call-iptables", value: "1" }
-    - { name: "net.bridge.bridge-nf-call-ip6tables", value: "1" }
-    - { name: "net.ipv4.ip_forward", value: "1" }
-
-- name: Ensure kubelet service directory exists
+- name: Create /etc/apt/keyrings directory
   ansible.builtin.file:
-    path: /etc/systemd/system/kubelet.service.d
+    path: /etc/apt/keyrings
     state: directory
     mode: '0755'
 
-- name: Create 10-kubeadm.conf using a template
-  ansible.builtin.template:
-    src: 10-kubeadm.conf.j2
-    dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-    mode: '0644'
+- name: Add Kubernetes GPG key
+  ansible.builtin.shell: |
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  args:
+    creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
-- name: Deploy kubeadm-flags.env
-  ansible.builtin.template:
-    src: templates/kubeadm-flags.env.j2
-    dest: /var/lib/kubelet/kubeadm-flags.env
-    owner: root
-    group: root
-    mode: '0644'
+- name: Add Kubernetes repository
+  ansible.builtin.apt_repository:
+    repo: 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /'
+    filename: kubernetes
+    state: present
 
-- name: Create kubelet config file
-  ansible.builtin.template:
-    src: kubelet-config.yaml.j2
-    dest: /var/lib/kubelet/config.yaml
-    mode: '0644'
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
 
-- name: Update kubelet service file
-  ansible.builtin.lineinfile:
+- name: Install Kubernetes packages
+  ansible.builtin.apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+
+- name: Check if Kubernetes packages are on hold
+  ansible.builtin.command: apt-mark showhold
+  register: hold_packages
+
+- name: Hold Kubernetes packages
+  ansible.builtin.command: apt-mark hold kubelet kubeadm kubectl
+  when: >
+    "'kubelet' not in hold_packages.stdout or
+     'kubeadm' not in hold_packages.stdout or
+     'kubectl' not in hold_packages.stdout"
+
+- name: Enable and start kubelet
+  ansible.builtin.service:
+    name: kubelet
+    enabled: yes
+    state: started
+
+- name: Pre-pull Kubernetes images
+  ansible.builtin.command: kubeadm config images pull --kubernetes-version v1.31.3
+  become: true
+
+- name: Configure Kubelet with specific node IP
+  ansible.builtin.blockinfile:
     path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-    line: 'Environment="KUBELET_CONFIG_ARGS=--config=/var/lib/kubelet/config.yaml"'
-    insertafter: '^Environment="KUBELET_KUBECONFIG_ARGS'
-    create: true
-    mode: '0644'
-  notify: Restart kubelet
+    block: |
+      [Service]
+      Environment="KUBELET_EXTRA_ARGS=--node-ip={{ master_ip }}"
+    create: yes
+    backup: yes
+  notify:
+    - Reload systemd
+    - Restart kubelet

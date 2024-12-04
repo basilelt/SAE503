@@ -1,0 +1,7 @@
+---
+ansible_user: toto
+ansible_port: 22
+master_ip: 10.
+slave1_ip: 10.
+slave2_ip: 10.
+slave3_ip: 10.

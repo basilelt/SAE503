@@ -21,7 +21,8 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
 
     # shellcheck disable=SC1091
     source ".venv/bin/activate"
+    info which python
 
+    ansible-galaxy install -r kubernetes-playbook/requirements.yml
     ansible-playbook -i kubernetes-playbook/inventory.yml kubernetes-playbook/deploy_kubernetes.yml -vvv
-    #ansible-playbook -i kubernetes-playbook/inventory.yml kubernetes-playbook/deploy_kubernetes.yml --ask-vault-pass
 fi

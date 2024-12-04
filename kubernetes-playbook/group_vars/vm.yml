@@ -1,5 +1,8 @@
 ---
 ansible_user: vagrant
 ansible_ssh_private_key_file: ~/.ssh/vagrant_common_key
-ansible_python_interpreter: /usr/bin/python3.9
 ansible_host: 127.0.0.1
+master_ip: 192.168.56.10
+slave1_ip: 192.168.56.11
+slave2_ip: 192.168.56.12
+slave3_ip: 192.168.56.13

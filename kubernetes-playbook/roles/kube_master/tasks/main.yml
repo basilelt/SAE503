@@ -1,0 +1,43 @@
+---
+- name: Clean up existing Kubernetes configuration
+  ansible.builtin.file:
+    path: /etc/kubernetes
+    state: absent
+  when: force_reinit | default(false)
+
+- name: Check if /etc/kubernetes/admin.conf exists
+  ansible.builtin.stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubeconfig_stat
+
+- name: Initialize Kubernetes Master
+  ansible.builtin.command: >
+    kubeadm init --pod-network-cidr={{ master_ip }}/24
+                 --apiserver-advertise-address={{ master_ip }}
+  register: kubeadm_init
+  args:
+    creates: /etc/kubernetes/admin.conf
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  when: force_reinit | default(false) or not kubeconfig_stat.stat.exists
+
+- name: Create .kube directory
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.kube"
+    state: directory
+    mode: '0755'
+
+- name: Copy kubeconfig to user directory
+  ansible.builtin.copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ ansible_env.HOME }}/.kube/config"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+    remote_src: yes
+
+- name: Set KUBECONFIG environment variable for root
+  ansible.builtin.lineinfile:
+    path: /etc/profile
+    line: 'export KUBECONFIG=/etc/kubernetes/admin.conf'
+    create: yes

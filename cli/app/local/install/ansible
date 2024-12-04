@@ -40,11 +40,10 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     fi
 
     # shellcheck disable=SC1091
-    source .venv/bin/activate
+    python="/home/toto/Documents/Github/perso/SAE503/.venv/bin/python"
 
-    pip install --upgrade pip
-    pip install ansible --no-input
-    pip install ansible-creator --no-input
-
-    #ansible-galaxy install -r kubernetes-playbook/requirements.yml
+    $python -m pip install --upgrade pip
+    $python -m pip install ansible --no-input
+    $python -m pip install ansible-lint --no-input
+    $python -m pip install kubernetes --no-input
 fi

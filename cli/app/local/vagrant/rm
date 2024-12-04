@@ -28,5 +28,7 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     fi
 
     info "cleaning up Vagrant VMs..."
+    vagrant halt
     vagrant destroy -f
+    vagrant global-status --prune
 fi
