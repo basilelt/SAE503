@@ -1,4 +1,8 @@
 ---
+- name: Reset kubeadm
+  ansible.builtin.command: kubeadm reset -f
+  ignore_errors: true
+
 - name: Join Kubernetes Cluster
   ansible.builtin.command: kubeadm join {{ hostvars['master'].ansible_default_ipv4.address }}:6443 --token {{ kubeadm_token }} --discovery-token-ca-cert-hash sha256:{{ kubeadm_hash }}
   when: kubeadm_token is defined and kubeadm_hash is defined

@@ -58,18 +58,50 @@
     enabled: yes
     state: started
 
-- name: Pre-pull Kubernetes images
-  ansible.builtin.command: kubeadm config images pull --kubernetes-version v1.31.3
-  become: true
+- name: Create kubelet configuration file
+  ansible.builtin.copy:
+    dest: /var/lib/kubelet/kubelet-config.yaml
+    content: |
+      kind: KubeletConfiguration
+      apiVersion: kubelet.config.k8s.io/v1beta1
+      staticPodPath: /etc/kubernetes/manifests
+      cgroupDriver: systemd
+      authentication:
+        anonymous:
+          enabled: false
+      containerRuntimeEndpoint: "unix:///run/containerd/containerd.sock"
+    owner: root
+    group: root
+    mode: '0644'
 
-- name: Configure Kubelet with specific node IP
+- name: Update kubelet service configuration
   ansible.builtin.blockinfile:
     path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
     block: |
       [Service]
-      Environment="KUBELET_EXTRA_ARGS=--node-ip={{ master_ip }}"
+      Environment="KUBELET_EXTRA_ARGS=--config=/var/lib/kubelet/kubelet-config.yaml --node-ip={{ ip }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    insertafter: "^# KUBELET EXTRA ARGS"
     create: yes
     backup: yes
   notify:
-    - Reload systemd
     - Restart kubelet
+
+- name: Create kubernetes group
+  ansible.builtin.group:
+    name: kubernetes
+    state: present
+
+- name: Add user to kubernetes group
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    groups: kubernetes
+    append: yes
+
+- name: Set kubernetes directory permissions
+  ansible.builtin.file:
+    path: /etc/kubernetes
+    state: directory
+    mode: '0755'
+    group: kubernetes
+    recurse: yes

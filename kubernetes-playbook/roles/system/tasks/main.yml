@@ -1,27 +1,59 @@
 - name: Disable swap temporarily
   ansible.builtin.shell: swapoff -a
-  become: true
 
 - name: Disable swap permanently
   ansible.builtin.mount:
     name: swap
     fstype: swap
     state: absent
-  become: true
 
 - name: Ensure systemd-timesyncd is installed
   ansible.builtin.package:
     name: systemd-timesyncd
     state: present
-  become: true
 
 - name: Ensure systemd-timesyncd is started and enabled
   ansible.builtin.service:
     name: systemd-timesyncd
     state: started
     enabled: true
-  become: true
 
 - name: Force time synchronization
   ansible.builtin.command: timedatectl set-ntp true
-  become: true
+
+- name: Ensure /sbin and /usr/sbin are in PATH
+  ansible.builtin.lineinfile:
+    path: /etc/profile
+    regexp: '^export PATH='
+    line: 'export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"'
+
+- name: Update apt repository
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Install necessary packages
+  ansible.builtin.apt:
+    name:
+      - util-linux
+      - procps
+    state: present
+
+- name: Load required kernel modules
+  community.general.modprobe:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - overlay
+    - br_netfilter
+
+- name: Configure kernel parameters
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    sysctl_file: /etc/sysctl.d/99-kubernetes.conf
+    reload: true
+  with_items:
+    - { name: 'net.bridge.bridge-nf-call-iptables', value: '1' }
+    - { name: 'net.bridge.bridge-nf-call-ip6tables', value: '1' }
+    - { name: 'net.ipv4.ip_forward', value: '1' }

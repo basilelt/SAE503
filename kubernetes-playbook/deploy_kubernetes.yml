@@ -13,23 +13,29 @@
   vars_files:
     - vars/main.yml
   roles:
-    - docker
+    - container-runtime
     - kubernetes
 
 - name: Initialize Kubernetes Master
   hosts: master
-  become: yes
+  become: no
   roles:
     - kube_master
+  vars:
+    become: yes
 
-- name: Install Calico CNI
+- name: Install Flannel CNI
   hosts: master
-  become: yes
+  become: no
   roles:
-    - calico
+    - flannel
+  vars:
+    become: yes
 
 - name: Join Worker Nodes to Cluster
   hosts: workers
+  vars_files:
+    - vars/main.yml
   become: yes
   roles:
     - kube_worker

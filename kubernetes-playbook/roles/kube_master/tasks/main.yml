@@ -1,43 +1,84 @@
 ---
-- name: Clean up existing Kubernetes configuration
+- name: Reset kubeadm
+  become: true
+  ansible.builtin.command: kubeadm reset -f
+  ignore_errors: true
+
+- name: Remove kubernetes directories
+  become: true
   ansible.builtin.file:
-    path: /etc/kubernetes
+    path: "{{ item }}"
     state: absent
-  when: force_reinit | default(false)
+  with_items:
+    - /etc/kubernetes/manifests
+    - /etc/kubernetes/pki
+    - /var/lib/kubelet
+    - /var/lib/etcd
 
-- name: Check if /etc/kubernetes/admin.conf exists
-  ansible.builtin.stat:
-    path: /etc/kubernetes/admin.conf
-  register: kubeconfig_stat
+- name: Set initial directory permissions
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: kubernetes
+  with_items:
+    - /etc/kubernetes
+    - /var/lib/kubelet
+    - /var/lib/etcd
 
-- name: Initialize Kubernetes Master
+- name: Initialize Kubernetes control plane
+  become: true
   ansible.builtin.command: >
-    kubeadm init --pod-network-cidr={{ master_ip }}/24
-                 --apiserver-advertise-address={{ master_ip }}
-  register: kubeadm_init
-  args:
-    creates: /etc/kubernetes/admin.conf
-  environment:
-    KUBECONFIG: /etc/kubernetes/admin.conf
-  when: force_reinit | default(false) or not kubeconfig_stat.stat.exists
+    kubeadm init 
+    --pod-network-cidr=10.244.0.0/16
+    --apiserver-advertise-address={{ ip }}
+    --cri-socket=unix:///run/containerd/containerd.sock
+    --ignore-preflight-errors=all
+    --v=5
 
 - name: Create .kube directory
   ansible.builtin.file:
     path: "{{ ansible_env.HOME }}/.kube"
     state: directory
-    mode: '0755'
+    mode: '0700'
+    owner: "{{ ansible_user }}"
 
-- name: Copy kubeconfig to user directory
+- name: Copy admin.conf to user's kube config
+  become: true
   ansible.builtin.copy:
     src: /etc/kubernetes/admin.conf
     dest: "{{ ansible_env.HOME }}/.kube/config"
     owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: '0644'
+    group: kubernetes
+    mode: '0600'
     remote_src: yes
 
-- name: Set KUBECONFIG environment variable for root
-  ansible.builtin.lineinfile:
-    path: /etc/profile
-    line: 'export KUBECONFIG=/etc/kubernetes/admin.conf'
-    create: yes
+- name: Set admin.conf permissions
+  become: true
+  ansible.builtin.file:
+    path: /etc/kubernetes/admin.conf
+    mode: '0660'
+    owner: root
+    group: kubernetes
+
+- name: Set permissions for kubernetes directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    recurse: yes
+  with_items:
+    - /etc/kubernetes
+    - /var/lib/kubelet
+    - "{{ ansible_env.HOME }}/.kube"
+
+- name: Ensure .kube directory exists with proper permissions
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.kube"
+    state: directory
+    mode: '0700'
+    owner: "{{ ansible_user }}"

@@ -1,0 +1,6 @@
+[plugins."io.containerd.grpc.v1.cri".containerd]
+  # Set the group ID for the containerd socket
+  [plugins."io.containerd.grpc.v1.cri".containerd]
+    session_protocol = "unix"
+    uid = 0
+    gid = {{ containerd_group_gid }}
