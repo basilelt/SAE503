@@ -6,19 +6,15 @@ all:
         masters:
           hosts:
             master:
-              ip: "{{ master_ip }}"
               ansible_port: 2300
 
         slaves:
           hosts:
             slave1:
-              ip: "{{ slave1_ip }}"
               ansible_port: 2301
             slave2:
-              ip: "{{ slave2_ip }}"
               ansible_port: 2302
             slave3:
-              ip: "{{ slave3_ip }}"
               ansible_port: 2303
 
     # premise:
@@ -26,17 +22,13 @@ all:
     #     masters:
     #       hosts:
     #         master:
-    #           ip: "{{ master_ip }}"
     #           ansible_host: "{{ master_ip }}"
 
     #     slaves:
     #       hosts:
     #         slave1:
-    #           ip: "{{ slave1_ip }}"
     #           ansible_host: "{{ slave1_ip }}"
     #         slave2:
-    #           ip: "{{ slave2_ip }}"
     #           ansible_host: "{{ slave2_ip }}"
     #         slave3:
-    #           ip: "{{ slave3_ip }}"
     #           ansible_host: "{{ slave3_ip }}"
