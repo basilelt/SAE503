@@ -1,3 +1,5 @@
 ---
 ansible_become_method: sudo
 ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+kubeadm_token: "jjyon1.bfztgwfuxavldki2"
+kubeadm_hash: "29b6281be8bd08fd2d993e322f8037491f32006d925a4cd96cd1568563d12e5f"

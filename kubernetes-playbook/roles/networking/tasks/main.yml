@@ -1,0 +1,7 @@
+---
+- name: Ensure iptables are set correctly
+  sysctl:
+    name: net.bridge.bridge-nf-call-iptables
+    value: "1"
+    state: present
+    reload: yes
