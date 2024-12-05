@@ -1,41 +1,26 @@
 ---
-- name: Prep system operations
+- name: Prepare all nodes
   hosts: all
-  become: yes
-  vars_files:
-    - vars/main.yml
+  become: true
   roles:
     - system
-
-- name: Kubernetes Cluster Setup
-  hosts: all
-  become: yes
-  vars_files:
-    - vars/main.yml
-  roles:
     - container-runtime
     - kubernetes
 
 - name: Initialize Kubernetes Master
-  hosts: master
-  become: no
+  hosts: masters
+  become: true
   roles:
     - kube_master
-  vars:
-    become: yes
 
-- name: Install Flannel CNI
-  hosts: master
-  become: no
+- name: Join Kubernetes Slaves
+  hosts: slaves
+  become: true
+  roles:
+    - kube_node
+
+- name: Deploy Network Plugin (Flannel)
+  hosts: masters
+  become: true
   roles:
     - flannel
-  vars:
-    become: yes
-
-- name: Join Worker Nodes to Cluster
-  hosts: workers
-  vars_files:
-    - vars/main.yml
-  become: yes
-  roles:
-    - kube_worker
