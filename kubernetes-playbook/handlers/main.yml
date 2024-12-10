@@ -5,6 +5,6 @@
     state: restarted
 
 - name: restart kubelet
-  service: 
+  systemd:
     name: kubelet
     state: restarted

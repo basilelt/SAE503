@@ -14,6 +14,20 @@
   register: kubernetes_init_config
   when: kubernetes_init_config is not defined
 
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Stop kubelet service
+  systemd:
+    name: kubelet
+    state: stopped
+
+- name: Restart containerd service
+  systemd:
+    name: containerd
+    state: restarted
+
 - name: Initialize Kubernetes master with kubeadm init.
   become: true
   command: >
@@ -21,18 +35,22 @@
   register: kubeadmin_init
   when: not kubernetes_init_stat.stat.exists
 
-- name: Ensure .kube directory exists.
+- name: Ensure .kube directory exists
   file:
-    path: "~/.kube"
+    path: "/home/{{ ansible_user }}/.kube"
     state: directory
-    mode: 0755
+    mode: '0755'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
 
-- name: Symlink the kubectl admin.conf to ~/.kube/config
-  file:
+- name: Copy admin.conf to user's kube config
+  copy:
     src: /etc/kubernetes/admin.conf
-    dest: "~/.kube/config"
-    state: link
-    mode: 0644
+    dest: "/home/{{ ansible_user }}/.kube/config"
+    mode: '0644'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    remote_src: yes
 
 - name: Storing config on the local machine
   ansible.builtin.fetch:
