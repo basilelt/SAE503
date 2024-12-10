@@ -1,0 +1,45 @@
+# --------------------------------------
+# -- Prepare system
+# -- for kubernetes installation
+# --------------------------------------
+# -- Implemented:
+# ---- Debian
+# --------------------------------------
+---
+# --------------------------------------
+# -- Debian
+# --------------------------------------
+- name: Prepare Debian
+  block:
+    - name: Install prerequisites
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gpg
+        state: present
+
+    - name: Create /etc/apt/keyrings directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Add Kubernetes GPG key
+      ansible.builtin.shell: |
+        curl -fsSL {{ kubernetes_apt_gpg_key }} | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+      args:
+        creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+    - name: Add Kubernetes repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] {{ kubernetes_apt_repository }} /"
+        filename: kubernetes
+        state: present
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+
+  when: ansible_os_family == 'Debian'

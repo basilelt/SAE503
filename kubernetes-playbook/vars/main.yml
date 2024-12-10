@@ -1,0 +1,45 @@
+---
+# --------------------------------------
+# -- Container runtime variable
+# --------------------------------------
+container_runtime: containerd
+
+# --------------------------------------
+# -- Containerd variables
+# --------------------------------------
+docker_apt_release_channel: stable
+docker_apt_arch: amd64
+docker_apt_repository: "deb [arch={{ docker_apt_arch }}] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} {{ docker_apt_release_channel }}"
+
+docker_apt_ignore_key_error: true
+docker_apt_gpg_key: https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg
+containerd_config_default_write: true
+
+# --------------------------------------
+# -- Kubernetes settings
+# --------------------------------------
+kubernetes_apt_keyring: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+kubernetes_apt_gpg_key: https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version }}/deb/Release.key
+kubernetes_apt_list: /etc/apt/sources.list.d/kubernetes.list
+kubernetes_apt_repository: "https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version }}/deb/"
+
+kubernetes_kubelet_extra_args: ""
+kubernetes_version_kubeadm: "stable-{{ kubernetes_version }}"
+kubernetes_join_command_extra_opts: ""
+kubelet_environment_file_path: /etc/default/kubelet
+kubernetes_version: "1.31"
+kubelet_version: "1.31.3-1.1"
+kubeadm_version: "1.31.3-1.1"
+
+kubernetes_packages:
+  - "kubelet={{ kubelet_version }}"
+  - "kubeadm={{ kubeadm_version }}"
+  - kubernetes-cni
+
+kubernetes_cluster_name: kubernetes
+kubernetes_apiserver_advertise_address: "192.168.56.10"
+kubernetes_control_plane_endpoint: "192.168.56.10"
+
+kubernetes_flannel_manifest_file_rbac: https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+kubernetes_flannel_manifest_file: https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+

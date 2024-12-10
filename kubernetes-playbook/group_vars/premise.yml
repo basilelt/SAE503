@@ -1,7 +1,8 @@
 ---
 ansible_user: toto
 ansible_port: 22
-master_ip: 10.
-slave1_ip: 10.
-slave2_ip: 10.
-slave3_ip: 10.
+ansible_ssh_private_key_file: .keys/common_key
+master_ip: 10.127.10.10
+slave1_ip: 10.127.10.11
+slave2_ip: 10.127.10.12
+slave3_ip: 10.127.10.13
