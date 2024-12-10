@@ -28,6 +28,7 @@ kubernetes_version_kubeadm: "stable-{{ kubernetes_version }}"
 kubernetes_join_command_extra_opts: ""
 kubelet_environment_file_path: /etc/default/kubelet
 kubernetes_version: "1.31"
+full_kubernetes_version: "v1.31.3"
 kubelet_version: "1.31.3-1.1"
 kubeadm_version: "1.31.3-1.1"
 
@@ -37,8 +38,8 @@ kubernetes_packages:
   - kubernetes-cni
 
 kubernetes_cluster_name: kubernetes
-kubernetes_apiserver_advertise_address: "192.168.56.10"
-kubernetes_control_plane_endpoint: "192.168.56.10"
+kubernetes_apiserver_advertise_address: "{{ master_ip}}"
+kubernetes_control_plane_endpoint: "{{ master_ip }}"
 
 kubernetes_flannel_manifest_file_rbac: https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
 kubernetes_flannel_manifest_file: https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml

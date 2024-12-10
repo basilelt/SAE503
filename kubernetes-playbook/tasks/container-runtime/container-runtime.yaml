@@ -30,17 +30,20 @@
         state: directory
       register: containerd_dir
 
-    - name: Get defaults from containerd.
+    - name: Generate default containerd configuration
       command: containerd config default
-      changed_when: false
       register: containerd_config_default
-      when: containerd_config_default_write
 
-    - name: Write defaults to config.toml.
+    - name: Write default containerd config to config.toml
       copy:
         dest: /etc/containerd/config.toml
         content: "{{ containerd_config_default.stdout }}"
       notify: restart containerd
-      when: containerd_config_default_write
+
+    - name: Create crictl configuration file
+      copy:
+        dest: /etc/crictl.yaml
+        content: |
+          runtime-endpoint: unix:///run/containerd/containerd.sock
   tags: init, cri
   when: container_runtime == 'containerd'
