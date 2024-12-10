@@ -1,0 +1,2 @@
+CREATE USER IF NOT EXISTS 'minecraft'@'%' IDENTIFIED BY 'minecraft';
+GRANT ALL PRIVILEGES ON *.* TO 'minecraft'@'%' WITH GRANT OPTION;
