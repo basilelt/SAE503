@@ -2,6 +2,7 @@
     "ansible.python.interpreterPath": "/Users/basilelt/Documents/Github/SAE503/.venv/bin/python",
     "cSpell.words": [
         "apiserver",
+        "autoremove",
         "bento",
         "bfztgwfuxavldki",
         "blockinfile",

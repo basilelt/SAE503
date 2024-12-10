@@ -34,7 +34,6 @@
       package:
         name: "{{ item }}"
         state: present
-      notify: restart kubelet
       loop: "{{ kubernetes_packages }}"
 
     - name: Check for existence of kubelet environment file.

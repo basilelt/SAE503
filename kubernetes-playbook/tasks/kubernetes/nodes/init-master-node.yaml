@@ -23,17 +23,19 @@
     name: kubelet
     state: stopped
 
-- name: Restart containerd service
-  systemd:
-    name: containerd
-    state: restarted
-
 - name: Initialize Kubernetes master with kubeadm init.
   become: true
   command: >
     kubeadm init --config /tmp/init-config.yaml
   register: kubeadmin_init
   when: not kubernetes_init_stat.stat.exists
+
+- name: Wait for Kubernetes API to be available
+  wait_for:
+    host: "{{ master_ip }}"
+    port: 6443
+    timeout: 300
+    state: started
 
 - name: Ensure .kube directory exists
   file:
@@ -59,10 +61,7 @@
     flat: yes
 
 - name: Configure Flannel networking.
-  command: "{{ item }}"
-  with_items:
-    - kubectl apply -f {{ kubernetes_flannel_manifest_file_rbac }}
-    - kubectl apply -f {{ kubernetes_flannel_manifest_file }}
+  command: kubectl apply -f {{ kubernetes_flannel_manifest_file }} --kubeconfig /home/{{ ansible_user }}/.kube/config
   register: flannel_result
   changed_when: "'created' in flannel_result.stdout"
 

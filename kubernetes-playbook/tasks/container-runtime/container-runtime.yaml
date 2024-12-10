@@ -38,7 +38,9 @@
       copy:
         dest: /etc/containerd/config.toml
         content: "{{ containerd_config_default.stdout }}"
-      notify: restart containerd
+
+    - name: Set containerd sandbox image
+      include_tasks: ./containerd/update_sandbox_image.yaml
 
     - name: Create crictl configuration file
       copy:

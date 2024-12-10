@@ -1,0 +1,14 @@
+# --------------------------------------
+# -- Containerd configuration
+# --------------------------------------
+---
+- name: Update containerd sandbox image version
+  replace:
+    path: /etc/containerd/config.toml
+    regexp: '^\s*sandbox_image\s*=\s*".*"$'
+    replace: '    sandbox_image = "registry.k8s.io/pause:3.10"'
+
+- name: Restart containerd
+  service:
+    name: containerd
+    state: restarted

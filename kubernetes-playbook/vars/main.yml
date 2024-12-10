@@ -41,6 +41,5 @@ kubernetes_cluster_name: kubernetes
 kubernetes_apiserver_advertise_address: "{{ master_ip}}"
 kubernetes_control_plane_endpoint: "{{ master_ip }}"
 
-kubernetes_flannel_manifest_file_rbac: https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
 kubernetes_flannel_manifest_file: https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
 
