@@ -7,6 +7,12 @@
 # --------------------------------------
 ---
 # --------------------------------------
+# -- Remove apparmor
+# --------------------------------------
+- name: Remove AppArmor
+  include_tasks: ./apparmor/apparmor.yaml
+  tags: init, apparmor
+# --------------------------------------
 # -- Install container runtime
 # --------------------------------------
 - name: Install container runtime
