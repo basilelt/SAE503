@@ -1,9 +1,0 @@
-# --------------------------------------
-# -- Initialize kubernetes cluster
-# --------------------------------------
----
-- hosts: all
-  become: true
-  roles:
-    - role: '.'
-      ansible_play_role_names: "install cluster with kubeadm"
