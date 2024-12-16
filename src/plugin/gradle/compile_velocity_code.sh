@@ -16,6 +16,7 @@ for dir in /app/source_code/velocity/*; do
         cd "$BUILD_DIR/$project_name" || exit
         if [ -f "gradlew" ]; then
             echo "Found gradlew in $dir"
+            chmod +x gradlew
             ./gradlew clean build
             echo "Copying JAR file to /app/compiled_code/velocity/"
             JAR_FILE=$(find . -maxdepth 1 -name "*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" | head -n 1)
