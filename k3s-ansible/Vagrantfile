@@ -26,10 +26,10 @@ def provision(vm, role, node_num)
       "k3s_cluster:children" => ["server", "agent"],
     }
     ansible.extra_vars = {
-      k3s_version: "v1.28.14+k3s1",
+      k3s_version: "v1.30.2+k3s1",
       api_endpoint: "#{NETWORK_PREFIX}.100",
       # Required for vagrant ansible provisioner
-      token: "myvagrant",
+      token: "nMC+3DdSWw4HcRVcNFbstG/LaGhKugRh41PxvAjSZMX/FlL18VDlXXbkYMDJbucoMWfOOPv3Udyy9Px3p5sNmQ==",
       # Required to use the private network configured above
       extra_server_args: "--node-external-ip #{node_ip} --flannel-iface eth1", 
       extra_agent_args: "--node-external-ip #{node_ip} --flannel-iface eth1",

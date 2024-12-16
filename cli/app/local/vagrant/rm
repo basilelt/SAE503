@@ -15,7 +15,7 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
 
     # shellcheck disable=SC2154
     path=$(${cli_name_app} zoptions rc read .dir)
-    cd "$path/vagrant" || fatal "Failed to cd to $path"
+    cd "$path/k3s-ansible" || fatal "Failed to cd to $path"
 
     # Check if vagrant is installed
     if ! command -v vagrant &> /dev/null; then
