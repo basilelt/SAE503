@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   mysql:
     build: ./mysql
@@ -37,12 +35,12 @@ services:
       - ./source_code/paper:/app/source_code/paper
       - ./source_code/velocity:/app/source_code/velocity
 
-  game_server:
+  game-server:
     build: 
       context: ./
-      dockerfile: ./common/game_server-files/Dockerfile
+      dockerfile: ./common/game-server-files/Dockerfile
     volumes:
-      - game_server-data:/data
+      - game-server-data:/data
       - ./compiled_code/paper:/data/compiled_plugins
     environment:
       - MYSQL_HOST=mysql
@@ -74,7 +72,7 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-      game_server:
+      game-server:
         condition: service_started
 
   proxy:
@@ -93,13 +91,13 @@ services:
       - MYSQL_USER=minecraft
       - MYSQL_PASSWORD=minecraft
     depends_on:
-      game_server:
+      game-server:
         condition: service_started
       lobby:
         condition: service_started
 
 volumes:
   lobby-data:
-  game_server-data:
+  game-server-data:
   proxy-data:
   mysql_data:

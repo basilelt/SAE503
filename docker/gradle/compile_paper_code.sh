@@ -1,4 +1,8 @@
 #!/bin/bash
+# To allow the script to work correctly,
+# edit your gradle build files, to build 
+# the plugin jar at the root of the project
+
 set -e
 
 BUILD_DIR="/app/build/paper"
@@ -12,22 +16,13 @@ for dir in /app/source_code/paper/*; do
         echo "Building Gradle project in $dir"
         cd "$BUILD_DIR/$project_name" || exit
         if [ -f "gradlew" ]; then
+            echo "Found gradlew in $dir"
             ./gradlew clean build
-            read -p "Press Enter to continue..."
-            JAR_FILE=$(find build/libs -name "*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" | head -n 1)
+            echo "Copying JAR file to /app/compiled_code/velocity/"
+            JAR_FILE=$(find . -maxdepth 1 -name "*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" | head -n 1)
+            echo "JAR file found: $JAR_FILE"
             if [ -n "$JAR_FILE" ]; then
-                DEST_DIR="/app/compiled_code/$project_name/"
-                mkdir -p "$DEST_DIR"
-                cp "$JAR_FILE" "$DEST_DIR"
-                echo "$project_name built successfully."
-            else
-                echo "No JAR file found for $project_name."
-            fi
-        elif [ -f "build.gradle" ] || [ -f "build.gradle.kts" ]; then
-            gradle clean build
-            JAR_FILE=$(find build/libs -name "*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" | head -n 1)
-            if [ -n "$JAR_FILE" ]; then
-                DEST_DIR="/app/compiled_code/$project_name/"
+                DEST_DIR="/app/compiled_code/paper/"
                 mkdir -p "$DEST_DIR"
                 cp "$JAR_FILE" "$DEST_DIR"
                 echo "$project_name built successfully."

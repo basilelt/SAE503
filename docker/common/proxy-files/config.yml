@@ -49,8 +49,8 @@ servers:
     address: lobby:25565
     restricted: false
     motd: ${CFG_MOTD}
-  game_server:
-    address: game_server:25565
+  game-server:
+    address: game-server:25565
     resticted: false
     motd: ${CFG_MOTD}
 

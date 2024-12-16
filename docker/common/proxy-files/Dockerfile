@@ -23,6 +23,3 @@ VOLUME /server
 
 # Expose the port
 EXPOSE 25577
-
-# Default command to start the proxy
-CMD ["start"]
