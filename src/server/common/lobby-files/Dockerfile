@@ -20,7 +20,7 @@ COPY server/common/lobby-files/db_config/sql.conf /data/plugins/BlueMap/storages
 COPY plugin/compiled_code/paper /data/plugins
 
 # Copy the world data
-COPY server/common/lobby-files/mapLobby/Natural-Lobby /data/world
+ADD server/common/lobby-files/mapLobby/Natural-Lobby.zip /data/world
 
 # Set volume mount point
 VOLUME /data
