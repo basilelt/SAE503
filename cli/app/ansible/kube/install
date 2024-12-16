@@ -23,5 +23,5 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     source ".venv/bin/activate"
     info which python
 
-    ansible-playbook -i kubernetes-playbook/inventory.yml kubernetes-playbook/playbook.yml
+    ansible-playbook -i kubernetes-playbook/inventory.yml kubernetes-playbook/playbooks/site.yml
 fi
