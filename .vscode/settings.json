@@ -46,6 +46,7 @@
         "runc",
         "rxnf",
         "showhold",
+        "socat",
         "swapoff",
         "thon",
         "timedatectl",

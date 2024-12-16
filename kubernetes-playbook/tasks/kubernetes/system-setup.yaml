@@ -18,6 +18,7 @@
           - ca-certificates
           - curl
           - gpg
+          - socat
         state: present
 
     - name: Create /etc/apt/keyrings directory
