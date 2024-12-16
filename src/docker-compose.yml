@@ -27,7 +27,7 @@ services:
       - ./plugin/source_code/velocity:/app/source_code/velocity
 
   gradle:
-    build: ../plugin/gradle
+    build: ./plugin/gradle
     container_name: gradle
     volumes:
       - ./plugin/compiled_code/paper:/app/compiled_code/paper
