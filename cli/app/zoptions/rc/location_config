@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+$cli_name_app zoptions rc read .config
