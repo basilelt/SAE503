@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+if [ $# -lt 3 ]; then
+    echo "Usage: $0 <config_file> <key> <value>"
+    exit 3
+fi
+
+config_file="$1"
+key="$2"
+newValue="$3"
+
+if [ ! -f "$config_file" ]; then
+    echo "Param1: ConfigFile does not exist at $config_file"
+    # Je suppose que vous voulez affecter une nouvelle valeur à config_file si elle n'existe pas
+    # Assurez-vous que cette commande est correcte
+    config_file=$($cli_name_app zoptions rc location_config)
+    if [ ! -f "$config_file" ]; then
+        echo "Error: ConfigFile does not exist at $config_file after reassignment"
+        exit 1
+    fi
+    key="$1"
+    newValue="$2"
+fi
+
+# Ajout de la nouvelle clé-valeur dans le fichier JSON
+jq ". + {\"${key}\": \"${newValue}\" }" $config_file > "tmp.json" && mv "tmp.json" $config_file

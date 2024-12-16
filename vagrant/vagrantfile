@@ -1,0 +1,54 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+    config.vm.provider "virtualbox"
+
+    # SSH Configuration
+    config.ssh.username = "vagrant"
+    config.ssh.insert_key = false
+
+    config.vm.box = "bento/ubuntu-22.04"
+
+    # Provisioning to add the public key and configure sudoers
+    config.vm.provision "shell", inline: <<-SHELL
+        mkdir -p /home/vagrant/.ssh
+        echo "#{File.read(File.expand_path('~/.ssh/vagrant_common_key.pub'))}" >> /home/vagrant/.ssh/authorized_keys
+        chown -R vagrant:vagrant /home/vagrant/.ssh
+        chmod 600 /home/vagrant/.ssh/authorized_keys
+
+        # Configure passwordless sudo for vagrant user
+        echo "vagrant ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/vagrant
+        sudo chmod 440 /etc/sudoers.d/vagrant
+    SHELL
+
+    # Master nodes
+    vmnumber = 1
+    (1..vmnumber).each do |i|
+      config.vm.define "master#{i}" do |master|
+        master.vm.hostname = "master#{i}"
+        master.vm.network "private_network", ip: "192.168.30.1#{i}"
+
+        # Set custom CPU and RAM here
+        master.vm.provider "virtualbox" do |vb|
+          vb.memory = "2048"
+          vb.cpus = 2
+        end
+      end
+    end
+  
+    # Slave nodes
+    vmnumber = 2
+    (1..vmnumber).each do |i|
+      config.vm.define "slave#{i}" do |slave|
+        slave.vm.hostname = "slave#{i}"
+        slave.vm.network "private_network", ip: "192.168.30.2#{i}"
+
+        # Set custom CPU and RAM here
+        slave.vm.provider "virtualbox" do |vb|
+          vb.memory = "2048"
+          vb.cpus = 2
+        end
+      end
+    end
+end

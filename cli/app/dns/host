@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+set -uo pipefail
+IFS=$'\n\t'
+
+# Load utility methods
+# shellcheck disable=SC1091
+. "$ROOT_DIR/utils"
+
+function cleanup() {
+    echo "Cleaning up..."
+}
+
+function usage() {
+    echo "Usage: $0 [-i ip_address] [-h hostname] [ip_address hostname]"
+    exit 1
+}
+
+ip_address=""
+hostname=""
+
+# Parse options
+while getopts ":i:h:" opt; do
+    case ${opt} in
+        i )
+            ip_address=$OPTARG
+            ;;
+        h )
+            hostname=$OPTARG
+            ;;
+        \? )
+            usage
+            ;;
+    esac
+done
+shift $((OPTIND -1))
+
+# Assign positional arguments if options are not provided
+if [[ -z "$ip_address" && -n "$1" ]]; then
+    ip_address="$1"
+    shift
+fi
+
+if [[ -z "$hostname" && -n "$1" ]]; then
+    hostname="$1"
+    shift
+fi
+
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+    trap cleanup EXIT
+
+    HOSTS_FILE="/etc/hosts"
+
+    info "Setting up DNS host"
+
+    # Prompt user for DNS entry details if not provided as arguments
+    if [[ -z "$ip_address" ]]; then
+        read -r -p "Enter the IP address: " ip_address
+    fi
+
+    if [[ -z "$hostname" ]]; then
+        read -r -p "Enter the hostname: " hostname
+    fi
+
+    # Validate IP address format
+    if ! [[ $ip_address =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        fatal "Invalid IP address format. Please use xxx.xxx.xxx.xxx"
+    fi
+
+    # Check if the entry already exists
+    if grep -q "$hostname" "$HOSTS_FILE"; then
+        warn "An entry for $hostname already exists in $HOSTS_FILE"
+        read -r -p "Do you want to update it? (y/n): " update_choice
+        if [[ $update_choice == "y" || $update_choice == "Y" ]]; then
+            sudo sed -i '' "/$hostname/d" "$HOSTS_FILE"
+        else
+            info "Skipping update for $hostname"
+            exit 0
+        fi
+    fi
+
+    # Add the new entry to the hosts file
+    if sudo tee -a "$HOSTS_FILE" > /dev/null <<< "$ip_address $hostname"; then
+        info "Successfully added $hostname to $HOSTS_FILE"
+    else
+        fatal "Failed to add entry to $HOSTS_FILE"
+    fi
+
+    # Flush DNS cache if on macOS
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sudo dscacheutil -flushcache
+        sudo killall -HUP mDNSResponder
+        info "DNS cache flushed"
+    fi
+fi

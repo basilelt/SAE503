@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+
+
+twin=$(cat $(cat $(${cli_name_app} zoptions rc location) | jq -r .database)/cli/app/.name)
+echo "${twin}"

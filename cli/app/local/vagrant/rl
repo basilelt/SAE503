@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -uo pipefail
+IFS=$'\n\t'
+
+# Load utility methods
+# shellcheck disable=SC1091
+. "$ROOT_DIR/utils"
+
+function cleanup() {
+    echo "Cleaning up..."
+}
+
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+    trap cleanup EXIT
+
+    # shellcheck disable=SC2154
+    path=$(${cli_name_app} zoptions rc read .dir)
+    cd "$path/vagrant" || fatal "Failed to cd to $path"
+
+    # Check if vagrant is installed
+    if ! command -v vagrant &> /dev/null; then
+        fatal "Vagrant is not installed. Please install Vagrant first."
+    fi
+
+    # Check if virtualbox is installed
+    if ! command -v VBoxManage &> /dev/null; then
+        fatal "VirtualBox is not installed. Please install VirtualBox first."
+    fi
+
+    info "Reload Vagrant VMs..."
+    vagrant halt
+    vagrant reload --provision
+fi
