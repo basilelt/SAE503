@@ -10,9 +10,9 @@ ENV ENABLE_RCON=true
 ENV PLUGINS_FILE=/config/plugins/plugins.txt
 
 # Copy configuration files from the common directory
-COPY common/proxy-files/velocity.toml /config/velocity.toml
-COPY common/proxy-files/forwarding.secret /config/forwarding.secret
-COPY common/proxy-files/plugins/plugins.txt /config/plugins/plugins.txt
+COPY server/common/proxy-files/velocity.toml /config/velocity.toml
+COPY server/common/proxy-files/forwarding.secret /config/forwarding.secret
+COPY server/common/proxy-files/plugins/plugins.txt /config/plugins/plugins.txt
 
 # Set permissions
 RUN chown -R 1000:1000 /config && \

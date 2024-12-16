@@ -1,6 +1,6 @@
 services:
   mysql:
-    build: ./mysql
+    build: ./server/mysql
     container_name: mysql
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
@@ -18,30 +18,30 @@ services:
       retries: 5
 
   maven:
-    build: ./maven
+    build: ./plugin/maven
     container_name: maven
     volumes:
-      - ./compiled_code/paper:/app/compiled_code/paper
-      - ./compiled_code/velocity:/app/compiled_code/velocity
-      - ./source_code/paper:/app/source_code/paper
-      - ./source_code/velocity:/app/source_code/velocity
+      - ./plugin/compiled_code/paper:/app/compiled_code/paper
+      - ./plugin/compiled_code/velocity:/app/compiled_code/velocity
+      - ./plugin/source_code/paper:/app/source_code/paper
+      - ./plugin/source_code/velocity:/app/source_code/velocity
 
   gradle:
-    build: ./gradle
+    build: ../plugin/gradle
     container_name: gradle
     volumes:
-      - ./compiled_code/paper:/app/compiled_code/paper
-      - ./compiled_code/velocity:/app/compiled_code/velocity
-      - ./source_code/paper:/app/source_code/paper
-      - ./source_code/velocity:/app/source_code/velocity
+      - ./plugin/compiled_code/paper:/app/compiled_code/paper
+      - ./plugin/compiled_code/velocity:/app/compiled_code/velocity
+      - ./plugin/source_code/paper:/app/source_code/paper
+      - ./plugin/source_code/velocity:/app/source_code/velocity
 
   game-server:
     build: 
       context: ./
-      dockerfile: ./common/game-server-files/Dockerfile
+      dockerfile: ./server/common/game-server-files/Dockerfile
     volumes:
       - game-server-data:/data
-      - ./compiled_code/paper:/data/compiled_plugins
+      - ./plugin/compiled_code/paper:/data/compiled_plugins
     environment:
       - MYSQL_HOST=mysql
       - MYSQL_PORT=3306
@@ -59,10 +59,10 @@ services:
   lobby:
     build: 
       context: ./
-      dockerfile: ./common/lobby-files/Dockerfile
+      dockerfile: ./server/common/lobby-files/Dockerfile
     volumes:
       - lobby-data:/data
-      - ./compiled_code/paper:/data/compiled_plugins
+      - ./plugin/compiled_code/paper:/data/compiled_plugins
     environment:
       - MYSQL_HOST=mysql
       - MYSQL_PORT=3306
@@ -78,12 +78,12 @@ services:
   proxy:
     build: 
       context: ./
-      dockerfile: ./common/proxy-files/Dockerfile
+      dockerfile: ./server/common/proxy-files/Dockerfile
     ports:
       - "25565:25577"
     volumes:
       - proxy-data:/server
-      - ./compiled_code/velocity:/server/compiled_plugins
+      - ./plugin/compiled_code/velocity:/server/compiled_plugins
     environment:
       - MYSQL_HOST=mysql
       - MYSQL_PORT=3306
