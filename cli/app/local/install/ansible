@@ -45,5 +45,8 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     $python -m pip install --upgrade pip
     $python -m pip install ansible --no-input
     $python -m pip install ansible-lint --no-input
-    $python -m pip install kubernetes --no-input
+    $python -m pip install netaddr --no-input
+
+    source ".venv/bin/activate"
+    ansible-galaxy collection install -r k3s-ansible/collections/requirements.yml
 fi
