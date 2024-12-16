@@ -1,6 +1,6 @@
-[submodule "src/plugin/source_code/paper/LuckPerms"]
+[submodule "LuckPermsPaper"]
 	path = src/plugin/source_code/paper/LuckPerms
 	url = git@github.com:basilelt/LuckPerms.git
-[submodule "src/plugin/source_code/velocity/LuckPerms"]
+[submodule "LuckPermsVelocity"]
 	path = src/plugin/source_code/velocity/LuckPerms
 	url = git@github.com:basilelt/LuckPerms.git
