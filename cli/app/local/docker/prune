@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -uo pipefail
+IFS=$'\n\t'
+
+# Load utility methods
+# shellcheck disable=SC1091
+. "$ROOT_DIR/utils"
+
+function cleanup() {
+    echo "Cleaning up..."
+}
+
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+    trap cleanup EXIT
+
+    # shellcheck disable=SC2154
+    path=$(${cli_name_app} zoptions rc read .dir)
+    cd "$path"/src || fatal "Failed to cd to $path"
+
+    docker-compose down
+    docker system prune -f --volumes
+fi
