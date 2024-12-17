@@ -18,15 +18,15 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     cd "$path" || fatal "Failed to cd to $path"
 
     # Check if python3 is installed
-    if ! command -v python3 &> /dev/null; then
-        info "Python3 is not installed. Please install Python3 first."
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            info "Installing Python3 using Homebrew"
-            brew install python
-        elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-            info "Installing Python3 using apt-get"
-            sudo apt-get update
-            sudo apt-get install -y python3
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        info "Installing Python3.11 using Homebrew"
+        brew install python@3.11
+        info "Ensuring pip3 and venv are available"
+        # pip3 and venv are included with Python 3.11 from Homebrew
+    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        info "Installing Python3.11, python3.11-venv, and pip3 using apt-get"
+        sudo apt-get update
+        sudo apt-get install -y python3.11 python3.11-venv python3-pip
         else
             fatal "Unsupported operating system: $OSTYPE"
         fi
