@@ -18,6 +18,9 @@ COPY server/common/lobby-files/db_config/plan_config.yml /data/plugins/Plan/conf
 COPY server/common/lobby-files/db_config/sql.yml /data/plugins/LibertyBans/sql.yml
 COPY server/common/lobby-files/db_config/sql.conf /data/plugins/BlueMap/storages/sql.conf
 COPY plugin/compiled_code/paper /data/plugins
+COPY server/common/lobby-files/rusty/private/private.key /plugins/rustyconnector-paper/metadata/private.key
+COPY server/common/lobby-files/rusty/connectors.yml /plugins/rustyconnector-paper/connectors.yml
+# COPY server/common/lobby-files/rusty/config.yml /plugins/rustyconnector-paper/config.yml
 
 # Copy the world data
 COPY server/common/lobby-files/mapLobby/Natural-Lobby /data/world

@@ -17,6 +17,10 @@ COPY server/common/game-server-files/db_config/plan_config.yml /data/plugins/Pla
 COPY server/common/game-server-files/db_config/sql.yml /data/plugins/LibertyBans/sql.yml
 COPY server/common/game-server-files/db_config/sql.conf /data/plugins/BlueMap/storages/sql.conf
 COPY plugin/compiled_code/paper /data/plugins
+COPY server/common/game-server-files/rusty/private/private.key /plugins/rustyconnector-paper/metadata/private.key
+COPY server/common/game-server-files/rusty/connectors.yml /plugins/rustyconnector-paper/connectors.yml
+#COPY server/common/game-server-files/rusty/config.yml /plugins/rustyconnector-paper/config.yml
+
 
 # Set volume mount point
 VOLUME /data

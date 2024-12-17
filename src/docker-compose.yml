@@ -17,6 +17,19 @@ services:
       timeout: 10s
       retries: 5
 
+  redis:
+      image: redis
+      container_name: redis
+      hostname: redis
+      restart: on-failure
+      volumes:
+      - redis_data:/usr/local/etc/redis/
+      ports:
+          - 6379:6379
+      depends_on:
+        mysql:
+          condition: service_healthy
+
   maven:
     build: ./plugin/maven
     container_name: maven
@@ -101,3 +114,4 @@ volumes:
   game-server-data:
   proxy-data:
   mysql_data:
+  redis_data:

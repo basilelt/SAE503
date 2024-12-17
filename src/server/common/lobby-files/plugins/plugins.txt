@@ -11,3 +11,4 @@ https://github.com/dmulloy2/ProtocolLib/releases/download/5.3.0/ProtocolLib.jar
 https://hangarcdn.papermc.io/plugins/LewMC/Kryptonite/versions/1.4.0/PAPER/kryptonite-1.4.0.jar
 https://hangarcdn.papermc.io/plugins/LewMC/Essence/versions/1.7.2/PAPER/essence-1.7.2.jar
 https://hangarcdn.papermc.io/plugins/TonimatasDEV/PerWorldPlugins/versions/1.5.9/PAPER/PerWorldPlugins-1.5.9.jar
+https://github.com/Aelysium-Group/rusty-connector/releases/download/v0.8.2/rustyconnector-0.8.2.jar
