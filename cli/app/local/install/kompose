@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+set -uo pipefail
+IFS=$'\n\t'
+
+# Load utility methods
+# shellcheck disable=SC1091
+. "$ROOT_DIR/utils"
+
+function cleanup() {
+    echo "Cleaning up..."
+    rm "path"/kompose-* >> /dev/null 2>&1
+}
+
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+    trap cleanup EXIT
+
+    # shellcheck disable=SC2154
+    path=$(${cli_name_app} zoptions rc read .dir)
+    cd "$path" || fatal "Failed to cd to $path"
+
+    if ! command -v kompose &> /dev/null; then
+        info "Kompose is not installed"
+    else
+        info "Kompose is already installed"
+        exit 0
+    fi
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        info "Installing Kompose for Darwin (macOS)"
+        arch_str=$(uname -m)
+        if [[ "$arch_str" == "x86_64" ]]; then
+            curl -LO https://github.com/kubernetes/kompose/releases/download/v1.35.0/kompose-darwin-amd64
+            chmod +x kompose-darwin-amd64
+            sudo mv kompose-darwin-amd64 /usr/local/bin/kompose
+        elif [[ "$arch_str" == "arm64" || "$arch_str" == "aarch64" ]]; then
+            curl -LO https://github.com/kubernetes/kompose/releases/download/v1.35.0/kompose-darwin-arm64
+            chmod +x kompose-darwin-arm64
+            sudo mv kompose-darwin-arm64 /usr/local/bin/kompose
+        else
+            fatal "Unsupported architecture: $arch_str"
+        fi
+    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        info "Installing Kompose for Linux"
+        arch_str=$(uname -m)
+        if [[ "$arch_str" == "x86_64" ]]; then
+            curl -LO https://github.com/kubernetes/kompose/releases/download/v1.35.0/kompose-linux-amd64
+            chmod +x kompose-linux-amd64
+            sudo mv kompose-linux-amd64 /usr/local/bin/kompose
+        elif [[ "$arch_str" == "arm64" || "$arch_str" == "aarch64" ]]; then
+            curl -LO https://github.com/kubernetes/kompose/releases/download/v1.35.0/kompose-linux-arm64
+            chmod +x kompose-linux-arm64
+            sudo mv kompose-linux-arm64 /usr/local/bin/kompose
+        else
+            fatal "Unsupported architecture: $arch_str"
+        fi
+    else
+        fatal "Unsupported operating system: $OSTYPE"
+    fi
+fi

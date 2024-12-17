@@ -16,6 +16,10 @@ services:
       interval: 5s
       timeout: 10s
       retries: 5
+    networks:
+      - minecraft
+    expose: 
+      - "3306"
 
   maven:
     build: ./plugin/maven
@@ -55,6 +59,10 @@ services:
         condition: service_completed_successfully
       gradle:
         condition: service_completed_successfully
+    networks:
+      - minecraft
+    expose: 
+      - "25565"
 
   lobby:
     build: 
@@ -95,9 +103,16 @@ services:
         condition: service_started
       lobby:
         condition: service_started
+    networks:
+      - minecraft
+    expose: 
+      - "25565"
 
 volumes:
   lobby-data:
   game-server-data:
   proxy-data:
   mysql_data:
+
+networks:
+  minecraft:

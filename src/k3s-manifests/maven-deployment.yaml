@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml -o k3s-manifests/ --volumes hostPath
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: maven
+  name: maven
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: maven
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml -o k3s-manifests/ --volumes hostPath
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: maven
+    spec:
+      containers:
+        - image: maven
+          name: maven
+          volumeMounts:
+            - mountPath: /app/compiled_code/paper
+              name: maven-hostpath0
+            - mountPath: /app/compiled_code/velocity
+              name: maven-hostpath1
+      restartPolicy: Always
+      volumes:
+        - hostPath:
+            path: /home/toto/Documents/Github/perso/SAE503/src/plugin/compiled_code/paper
+          name: maven-hostpath0
+        - hostPath:
+            path: /home/toto/Documents/Github/perso/SAE503/src/plugin/compiled_code/velocity
+          name: maven-hostpath1

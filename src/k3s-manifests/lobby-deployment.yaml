@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml -o k3s-manifests/ --volumes hostPath
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: lobby
+  name: lobby
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: lobby
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml -o k3s-manifests/ --volumes hostPath
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: lobby
+    spec:
+      containers:
+        - env:
+            - name: MYSQL_DATABASE
+              value: minecraft
+            - name: MYSQL_HOST
+              value: mysql
+            - name: MYSQL_PASSWORD
+              value: minecraft
+            - name: MYSQL_PORT
+              value: "3306"
+            - name: MYSQL_USER
+              value: minecraft
+          image: lobby
+          name: lobby
+          volumeMounts:
+            - mountPath: /data
+              name: lobby-data
+            - mountPath: /data/compiled_plugins
+              name: lobby-hostpath1
+      restartPolicy: Always
+      volumes:
+        - hostPath:
+            path: /home/toto/Documents/Github/perso/SAE503/src
+          name: lobby-data
+        - hostPath:
+            path: /home/toto/Documents/Github/perso/SAE503/src/plugin/compiled_code/paper
+          name: lobby-hostpath1

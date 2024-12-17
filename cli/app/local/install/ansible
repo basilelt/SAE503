@@ -22,11 +22,11 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
         info "Python3 is not installed. Please install Python3 first."
         if [[ "$OSTYPE" == "darwin"* ]]; then
             info "Installing Python3 using Homebrew"
-            brew install python
+            brew install python rsync
         elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
             info "Installing Python3 using apt-get"
             sudo apt-get update
-            sudo apt-get install -y python3
+            sudo apt-get install -y python3 rsync
         else
             fatal "Unsupported operating system: $OSTYPE"
         fi
