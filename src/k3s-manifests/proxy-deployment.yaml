@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    kompose.cmd: kompose convert -f docker-compose.yml -o k3s-manifests/ --volumes hostPath
+    kompose.cmd: kompose convert -f docker-compose.yml -o k3s-manifests/ --volumes persistentVolumeClaim
     kompose.version: 1.35.0 (9532ceef3)
   labels:
     io.kompose.service: proxy
@@ -17,7 +17,7 @@ spec:
   template:
     metadata:
       annotations:
-        kompose.cmd: kompose convert -f docker-compose.yml -o k3s-manifests/ --volumes hostPath
+        kompose.cmd: kompose convert -f docker-compose.yml -o k3s-manifests/ --volumes persistentVolumeClaim
         kompose.version: 1.35.0 (9532ceef3)
       labels:
         io.kompose.service: proxy
@@ -34,7 +34,7 @@ spec:
               value: "3306"
             - name: MYSQL_USER
               value: minecraft
-          image: proxy
+          image: 192.168.30.222:32000/proxy
           name: proxy
           ports:
             - containerPort: 25577
@@ -45,12 +45,12 @@ spec:
             - mountPath: /server
               name: proxy-data
             - mountPath: /server/compiled_plugins
-              name: proxy-hostpath1
+              name: proxy-cm1
       restartPolicy: Always
       volumes:
-        - hostPath:
-            path: /home/toto/Documents/Github/perso/SAE503/src
-          name: proxy-data
-        - hostPath:
-            path: /home/toto/Documents/Github/perso/SAE503/src/plugin/compiled_code/velocity
-          name: proxy-hostpath1
+        - name: proxy-data
+          persistentVolumeClaim:
+            claimName: proxy-data
+        - configMap:
+            name: proxy-cm1
+          name: proxy-cm1

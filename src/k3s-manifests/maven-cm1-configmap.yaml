@@ -1,0 +1,12 @@
+apiVersion: v1
+data:
+  .gitignore: |-
+    *.jar
+    !.gitignore
+    !.gitkeep
+  .gitkeep: ""
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: maven
+  name: maven-cm1

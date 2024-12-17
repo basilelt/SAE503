@@ -1,5 +1,6 @@
 services:
   mysql:
+    image: 192.168.30.222:32000/mysql
     build: ./server/mysql
     container_name: mysql
     environment:
@@ -22,6 +23,7 @@ services:
       - "3306"
 
   maven:
+    image: 192.168.30.222:32000/maven
     build: ./plugin/maven
     container_name: maven
     volumes:
@@ -31,6 +33,7 @@ services:
       - ./plugin/source_code/velocity:/app/source_code/velocity
 
   gradle:
+    image: 192.168.30.222:32000/gradle
     build: ./plugin/gradle
     container_name: gradle
     volumes:
@@ -40,6 +43,7 @@ services:
       - ./plugin/source_code/velocity:/app/source_code/velocity
 
   game-server:
+    image: 192.168.30.222:32000/game-server
     build: 
       context: ./
       dockerfile: ./server/common/game-server-files/Dockerfile
@@ -65,6 +69,7 @@ services:
       - "25565"
 
   lobby:
+    image: 192.168.30.222:32000/lobby
     build: 
       context: ./
       dockerfile: ./server/common/lobby-files/Dockerfile
@@ -84,6 +89,7 @@ services:
         condition: service_started
 
   proxy:
+    image: 192.168.30.222:32000/proxy
     build: 
       context: ./
       dockerfile: ./server/common/proxy-files/Dockerfile

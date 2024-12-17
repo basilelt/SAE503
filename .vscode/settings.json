@@ -46,6 +46,7 @@
         "ocdr",
         "overlayfs",
         "passwordless",
+        "persistentvolumeclaim",
         "perso",
         "procps",
         "reinit",

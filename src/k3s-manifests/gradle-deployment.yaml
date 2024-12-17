@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    kompose.cmd: kompose convert -f docker-compose.yml -o k3s-manifests/ --volumes hostPath
+    kompose.cmd: kompose convert -f docker-compose.yml -o k3s-manifests/ --volumes persistentVolumeClaim
     kompose.version: 1.35.0 (9532ceef3)
   labels:
     io.kompose.service: gradle
@@ -17,24 +17,24 @@ spec:
   template:
     metadata:
       annotations:
-        kompose.cmd: kompose convert -f docker-compose.yml -o k3s-manifests/ --volumes hostPath
+        kompose.cmd: kompose convert -f docker-compose.yml -o k3s-manifests/ --volumes persistentVolumeClaim
         kompose.version: 1.35.0 (9532ceef3)
       labels:
         io.kompose.service: gradle
     spec:
       containers:
-        - image: gradle
+        - image: 192.168.30.222:32000/gradle
           name: gradle
           volumeMounts:
             - mountPath: /app/compiled_code/paper
-              name: gradle-hostpath0
+              name: gradle-cm0
             - mountPath: /app/compiled_code/velocity
-              name: gradle-hostpath1
+              name: gradle-cm1
       restartPolicy: Always
       volumes:
-        - hostPath:
-            path: /home/toto/Documents/Github/perso/SAE503/src/plugin/compiled_code/paper
-          name: gradle-hostpath0
-        - hostPath:
-            path: /home/toto/Documents/Github/perso/SAE503/src/plugin/compiled_code/velocity
-          name: gradle-hostpath1
+        - configMap:
+            name: gradle-cm0
+          name: gradle-cm0
+        - configMap:
+            name: gradle-cm1
+          name: gradle-cm1

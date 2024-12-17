@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -uo pipefail
+IFS=$'\n\t'
+
+# Load utility methods
+# shellcheck disable=SC1091
+. "$ROOT_DIR/utils"
+
+function cleanup() {
+    echo "Cleaning up..."
+}
+
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+    trap cleanup EXIT
+
+    # shellcheck disable=SC2154
+    path=$(${cli_name_app} zoptions rc read .dir)
+    cd "$path"/src || fatal "Failed to cd to $path"
+
+    # Check if Kompose is installed
+    if ! command -v kompose &> /dev/null; then
+        fatal "Kompose is not installed. Please install it first."
+    fi
+
+    # Run Kompose conversion
+    kompose convert -f docker-compose.yml -o k3s-manifests/ --volumes persistentVolumeClaim
+
+    # Check if Kompose conversion was successful
+    if [[ $? -ne 0 ]]; then
+        fatal "Kompose conversion failed."
+    fi
+
+    # Update storage size in all PersistentVolumeClaim YAML files
+    for pvc in k3s-manifests/*-persistentvolumeclaim.yaml; do
+        if [[ -f "$pvc" ]]; then
+            sed -i 's/storage: 100Mi/storage: 10Gi/' "$pvc"
+            echo "Updated storage to 10Gi in $pvc"
+        fi
+    done
+
+    echo "All PersistentVolumeClaims have been updated to use 10Gi storage."
+fi

@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    kompose.cmd: kompose convert -f docker-compose.yml -o k3s-manifests/ --volumes hostPath
+    kompose.cmd: kompose convert -f docker-compose.yml -o k3s-manifests/ --volumes persistentVolumeClaim
     kompose.version: 1.35.0 (9532ceef3)
   labels:
     io.kompose.service: maven
@@ -17,24 +17,24 @@ spec:
   template:
     metadata:
       annotations:
-        kompose.cmd: kompose convert -f docker-compose.yml -o k3s-manifests/ --volumes hostPath
+        kompose.cmd: kompose convert -f docker-compose.yml -o k3s-manifests/ --volumes persistentVolumeClaim
         kompose.version: 1.35.0 (9532ceef3)
       labels:
         io.kompose.service: maven
     spec:
       containers:
-        - image: maven
+        - image: 192.168.30.222:32000/maven
           name: maven
           volumeMounts:
             - mountPath: /app/compiled_code/paper
-              name: maven-hostpath0
+              name: maven-cm0
             - mountPath: /app/compiled_code/velocity
-              name: maven-hostpath1
+              name: maven-cm1
       restartPolicy: Always
       volumes:
-        - hostPath:
-            path: /home/toto/Documents/Github/perso/SAE503/src/plugin/compiled_code/paper
-          name: maven-hostpath0
-        - hostPath:
-            path: /home/toto/Documents/Github/perso/SAE503/src/plugin/compiled_code/velocity
-          name: maven-hostpath1
+        - configMap:
+            name: maven-cm0
+          name: maven-cm0
+        - configMap:
+            name: maven-cm1
+          name: maven-cm1
