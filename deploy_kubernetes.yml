@@ -1,0 +1,13 @@
+---
+- name: Deploy Kubernetes Cluster
+  hosts: all
+  become: yes
+  vars_files:
+    - group_vars/all.yml
+    - group_vars/{{ inventory_hostname }}.yml
+  roles:
+    - system
+    - container-runtime
+    - kubernetes
+    - flannel
+    - networking 

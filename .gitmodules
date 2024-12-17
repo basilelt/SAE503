@@ -1,0 +1,9 @@
+[submodule "LuckPermsPaper"]
+	path = src/plugin/source_code/paper/LuckPerms
+	url = git@github.com:basilelt/LuckPerms.git
+[submodule "LuckPermsVelocity"]
+	path = src/plugin/source_code/velocity/LuckPerms
+	url = git@github.com:basilelt/LuckPerms.git
+[submodule "k3s-ansible"]
+	path = k3s-ansible
+	url = git@github.com:basilelt/k3s-ansible.git

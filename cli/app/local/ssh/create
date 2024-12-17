@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -uo pipefail
+IFS=$'\n\t'
+
+# Load utility methods
+. "$ROOT_DIR/utils"
+
+function cleanup() {
+    echo "Cleaning up..."
+}
+
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+    trap cleanup EXIT
+
+    # shellcheck disable=SC2154
+    path=$(${cli_name_app} zoptions rc read .dir)
+    cd "${path}" || fatal "Failed to cd to ${path}"
+
+    # Create SSH key pair
+    ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" -C "admin@admin.com"
+    chmod 600 ~/.ssh/id_rsa
+    chmod 600 ~/.ssh/id_rsa.pub
+    cp ~/.ssh/id_rsa.pub ~/.ssh/authorized_keys
+
+    # Copy the keys for later use
+    mkdir -p keys
+    cp ~/.ssh/id_rsa.pub keys/id_rsa.pub
+    cp ~/.ssh/id_rsa keys/id_rsa
+fi

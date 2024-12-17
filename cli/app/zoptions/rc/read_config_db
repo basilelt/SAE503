@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+if [ $# == 0 ]; then
+    exit 3
+fi
+
+config_file="$1"
+key="$2"
+default_value="$3"
+
+
+if [ ! -f "$config_file" ];
+then
+ #echo "config exists."
+#else
+ #  echo "Param1: ConfigFile does not exist in $config_file"
+ #exit 1
+ config_file=`$cli_name_app zoptions rc location_config`
+ key="$1"
+fi
+
+db_config=$(jq -r "$key" "$config_file" )
+
+if [ "$config_file" != "null" ]
+then
+    echo "$db_config"
+elif [ -n "$default_value" ]
+then
+    echo "$default_value"
+else
+    exit 1
+fi

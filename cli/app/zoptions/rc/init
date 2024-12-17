@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+RC_PATH="$HOME/.$1/$2.json"
+
+if [ ! $# -eq 2 ]
+then
+    echo "Need params[2]: projetName & configFileName (ex: alpha) should be same file for both project"
+    exit 1
+fi
+
+extension=""
+
+if [ ! -f "$RC_PATH" ]
+then
+
+    echo "$1" > $ROOT_DIR/app/.project
+    echo "$2" > $ROOT_DIR/app/.config
+    echo "${2}${extension}" > $ROOT_DIR/app/.name
+    mkdir -p "$HOME/.$1"
+    RC_PATH="$HOME/.$1/$2.json"
+
+fi
+
+
+pwd=`pwd`
+
+if [[ -f "$RC_PATH" ]]; then
+    >&2 echo -e "\033[31m'$RC_PATH' already exists\033[39m"
+    #>&2 echo "We'd rather not overwrite runtime configuration file you've already created. $RC_PATH"
+    #cat $RC_PATH
+    #exit 1
+
+else
+
+cat > "$RC_PATH" <<EOF
+{}
+EOF
+
+fi
+
+#cd ..
+#pwd=$(pwd)
+
+jq ".dir = \"$pwd\"" $RC_PATH > "tmp.json" && mv "tmp.json" $RC_PATH
+
+
+cat "$RC_PATH"
+
+echo "You can now edit your runtime configuration file: $RC_PATH"

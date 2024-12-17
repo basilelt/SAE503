@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+set -uo pipefail
+IFS=$'\n\t'
+
+# Load utility methods
+# shellcheck disable=SC1091
+. "$ROOT_DIR/utils"
+
+function cleanup() {
+    echo "Cleaning up..."
+}
+
+function usage() {
+    echo "Usage: $0 [-u ssh_user] [-i ip_address] [ssh_user ip_address]"
+    exit 1
+}
+
+ssh_user=""
+ip_address=""
+
+# Parse options
+while getopts ":u:i:" opt; do
+    case ${opt} in
+        u )
+            ssh_user=$OPTARG
+            ;;
+        i )
+            ip_address=$OPTARG
+            ;;
+        \? )
+            usage
+            ;;
+    esac
+done
+shift $((OPTIND -1))
+
+# Assign positional arguments if options are not provided
+if [[ -z "$ssh_user" && -n "${1:-}" ]]; then
+    ssh_user="${1}"
+    shift
+fi
+
+if [[ -z "$ip_address" && -n "${1:-}" ]]; then
+    ip_address="${1}"
+    shift
+fi
+
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+    trap cleanup EXIT
+
+    # shellcheck disable=SC2154
+    path=$(${cli_name_app} zoptions rc read .dir)
+    cd "$path" || fatal "Failed to cd to $path"
+
+    # Prompt for SSH user and IP address if not provided as arguments
+    if [[ -z "$ssh_user" ]]; then
+        read -r -p "Enter the SSH user: " ssh_user
+    fi
+
+    if [[ -z "$ip_address" ]]; then
+        read -r -p "Enter the IP address: " ip_address
+    fi
+
+    # Copy the SSH public key to the remote host
+    if ssh-copy-id -o StrictHostKeyChecking=no -i keys/id_rsa.pub "${ssh_user}@${ip_address}"; then
+        echo "SSH key successfully copied to ${ssh_user}@${ip_address}"
+    else
+        fatal "Failed to copy SSH key"
+    fi
+
+    # Prompt for the sudo password
+    read -r -s -p "Enter sudo password for ${ssh_user}@${ip_address}: " sudo_pass
+    echo ""
+
+    # Configure passwordless sudo for the SSH user using the provided password
+    if echo "${sudo_pass}" | ssh -o StrictHostKeyChecking=no "${ssh_user}@${ip_address}" "sudo -S bash -c \"echo '${ssh_user} ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/${ssh_user} && sudo chmod 440 /etc/sudoers.d/${ssh_user}\""; then
+        echo "Passwordless sudo configured for user '${ssh_user}' on ${ip_address}"
+    else
+        fatal "Failed to configure passwordless sudo for user '${ssh_user}' on ${ip_address}"
+    fi
+fi

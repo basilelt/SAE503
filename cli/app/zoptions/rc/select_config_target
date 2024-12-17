@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+# Load utility methods
+. "$ROOT_DIR/utils"
+
+
+cleanup() {
+    # Remove temporary files
+    # Restart services
+    # ...
+
+    info "select_config_target - cleanup done"
+}
+
+
+
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+    trap cleanup EXIT
+
+    ## UPDATE CONFIG
+    RC_PATH=`${cli_name_app} zoptions rc location`
+
+    # SELECT CONFIG FILE
+    file=$( chooseConfig "select" )
+    #info "Config : $file"
+    jq ".config = \"$file\"" $RC_PATH > "tmp.json" && mv "tmp.json" $RC_PATH
+
+    ${cli_name_app} zoptions rc read .
+
+fi

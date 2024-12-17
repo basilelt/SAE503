@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -uo pipefail
+IFS=$'\n\t'
+
+# Load utility methods
+# shellcheck disable=SC1091
+. "$ROOT_DIR/utils"
+
+function cleanup() {
+    echo "Cleaning up..."
+}
+
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+    trap cleanup EXIT
+
+    # shellcheck disable=SC2154
+    path=$(${cli_name_app} zoptions rc read .dir)
+    cd "$path" || fatal "Failed to cd to $path"
+
+    # Check if python3 is installed
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        info "Installing Python3.11 using Homebrew"
+        brew install python@3.11
+        info "Ensuring pip3 and venv are available"
+        # pip3 and venv are included with Python 3.11 from Homebrew
+    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        info "Installing Python3.11, python3.11-venv, and pip3 using apt-get"
+        sudo apt-get update
+        sudo apt-get install -y python3.11 python3.11-venv python3-pip
+        else
+            fatal "Unsupported operating system: $OSTYPE"
+        fi
+    fi
+
+    # Create a virtual environment
+    if [[ ! -d .venv ]]; then
+        python3 -m venv .venv
+    else
+        info "Virtual environment already exists."
+    fi
+
+    # shellcheck disable=SC1091
+    python="$path"/.venv/bin/python
+
+    $python -m pip install --upgrade pip
+    $python -m pip install -r "$path"/requirements.txt --no-input
+
+    source "$path"/.venv/bin/activate
+    ansible-galaxy collection install -r "$path"/k3s-ansible/collections/requirements.yml
+fi
