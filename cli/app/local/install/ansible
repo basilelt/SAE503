@@ -40,13 +40,11 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     fi
 
     # shellcheck disable=SC1091
-    python="/home/toto/Documents/Github/perso/SAE503/.venv/bin/python"
+    python="$path"/.venv/bin/python
 
     $python -m pip install --upgrade pip
-    $python -m pip install ansible --no-input
-    $python -m pip install ansible-lint --no-input
-    $python -m pip install netaddr --no-input
+    $python -m pip install -r "$path"/requirements.txt --no-input
 
-    source ".venv/bin/activate"
-    ansible-galaxy collection install -r k3s-ansible/collections/requirements.yml
+    source "$path"/.venv/bin/activate
+    ansible-galaxy collection install -r "$path"/k3s-ansible/collections/requirements.yml
 fi
