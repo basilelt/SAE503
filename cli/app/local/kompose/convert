@@ -34,9 +34,9 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     for pvc in k3s-manifests/*-persistentvolumeclaim.yaml; do
         if [[ -f "$pvc" ]]; then
             sed -i 's/storage: 100Mi/storage: 10Gi/' "$pvc"
-            echo "Updated storage to 10Gi in $pvc"
+            info "Updated storage to 10Gi in $pvc"
         fi
     done
 
-    echo "All PersistentVolumeClaims have been updated to use 10Gi storage."
+    info "All PersistentVolumeClaims have been updated to use 10Gi storage."
 fi
