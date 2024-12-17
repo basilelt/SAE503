@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[Minecraft Server Name]</title>
+    <link rel="icon" type="image/png" href="media/favicon.png">
+    <link rel="stylesheet" href="media/style.css">
+    <link href="https://fonts.bunny.net/css?family=Space+Grotesk:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="app.js" defer></script>
+
+</head>
+<body>
+    <script>
+      // Réactiver la vérification si un utilisateur est connecté
+      const currentUser = localStorage.getItem('currentUser');
+
+      if (!currentUser) {
+         window.location.href = 'index.html';
+      } else {
+          const welcomeMessage = document.createElement('div');
+          welcomeMessage.className = 'welcome-message';
+          welcomeMessage.textContent = `Welcome, ${currentUser}!`;
+          welcomeMessage.style.textAlign = 'center';
+          welcomeMessage.style.fontSize = '1.5rem';
+          welcomeMessage.style.color = '#fff';
+          welcomeMessage.style.marginTop = '20px';
+          document.body.prepend(welcomeMessage);
+
+          const logoutBtn = document.createElement('button');
+          logoutBtn.className = 'btn btn-danger';
+          logoutBtn.textContent = 'Logout';
+          logoutBtn.style.position = 'fixed';
+          logoutBtn.style.top = '10px';
+          logoutBtn.style.right = '10px';
+          logoutBtn.addEventListener('click', () => {
+              localStorage.removeItem('currentUser'); // Supprime l'utilisateur actuel
+              window.location.href = 'login.html'; // Redirige vers la page de connexion
+          });
+          document.body.appendChild(logoutBtn);
+      }
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" defer></script>
+    <nav class="desktop_navbar">
+      <a href="#"><img class="desktop_navbar_logo_img" src="media/logo_small.png" alt="logo"></a>
+      <a href="https://wiki.example.com/" class="desktop_navbar_link">Wiki</a>
+      <a href="#discord" class="desktop_navbar_link scroll">Community</a>
+      <a href="#about" class="desktop_navbar_link scroll">About Us</a>
+      <div class="desktop_navbar_link dropdown">
+        <a href="#maps" class="desktop_navbar_link">Maps</a>
+        <div class="dropdown-content">
+            <a href="#map1">Survival Map</a>
+            <a href="#map2">Creative Map</a>
+            <a href="#map3">Adventure Map</a>
+        </div>
+    </div>
+     
+    </nav>
+    <div class="mobile_navbar">
+      <a href="#" class="mobile_navbar_logo_img_a"><img class="mobile_navbar_logo_img" src="media/logo_small.png" alt="logo"></a>
+      <div id="mobile_navbar_links">
+          <a class="mobile_navbar_link" onclick="mobile_navbar_link_hider()" href="https://wiki.example.com/">Wiki</a>
+          <a class="mobile_navbar_link scroll" onclick="mobile_navbar_link_hider()" href="#discord">Community</a>
+          <a class="mobile_navbar_link scroll" onclick="mobile_navbar_link_hider()" href="#about">About Us</a>
+          <a class="mobile_navbar_link scroll" onclick="mobile_navbar_link_hider()" href="login.html">Login</a>
+        </div>
+        <div class="icon" onclick="mobile_navbar_link_hider()">
+            <i class="fa fa-bars"></i>
+        </div>
+        <script>
+            function mobile_navbar_link_hider() {
+            var x = document.getElementById("mobile_navbar_links");
+            if (x.style.display === "flex") {
+                x.style.display = "none";
+            } else {
+                x.style.display = "flex";
+            }
+            } 
+        </script>
+    </div>
+    <div class="mainflex">
+      <div class="main1">
+        <a class="main1_logo_a" href="#">
+          <img class="main1_logo" src="media/logo.png" alt="logo">
+        </a>
+        <div class="main1_description">
+          <a>Minecraft,<br>like</a>
+          <a class="main1_actcent">already done before</a><a>.</a>
+        </div>
+        <div class="main1_ipcopier_div">
+          <button class="main1_ipcopier" onclick="copyText()" type="button">
+            <span class="main1_ipcopier_text1">play.example.com</span>
+            <br>
+            <span class="main1_ipcopier_text2">Click to copy</span>
+          </button>
+          <script>
+            function copyText() {
+                navigator.clipboard.writeText
+            ("play.example.com");
+                }
+            $(document).ready(function() {
+            $('.main1_ipcopier').click(function() {
+                var popup = $('<div>', { class: 'main1_popup' })
+                .append($('<h3 class="copy_confirm">').text('Copied IP to clipboard'))
+                $(this).after(popup);
+                setTimeout(function() {
+                popup.remove();
+                }, 1000);
+            });
+            });
+        </script>
+        </div>
+        <a href="#more" class="scroll">
+          <img alt="downarrow" class="main1_downarrow" src="media/downarrow.png">
+        </a>
+        <script>
+          const scrollLinks = document.querySelectorAll('.scroll');
+          scrollLinks.forEach(function(link) {
+            link.addEventListener('click', function(event) {
+              event.preventDefault();
+              const target = document.querySelector(link.getAttribute('href'));
+              const offsetTop = target.offsetTop;
+              window.scrollTo({
+                top: offsetTop,
+                behavior: 'smooth'
+              });
+            });
+          });
+        </script>
+      </div>
+      <div id="more"></div>
+      <div class="main2">
+        <a class="headline">Our Maps</a>
+        <div class="main2_features_div">
+          
+          <!-- Creative Map -->
+          <div id="map" class="main2_feature" onclick="toggleDetails('details-map')">
+            <img class="main2_feature_img" alt="Map Image" src="media/map.png">
+            <a class="main2_feature_headline">Creative Map</a>
+            <a class="main2_feature_text">Unleash your creativity in our dedicated creative world!</a>
+            <div id="details-map" class="map-details">
+              <p>Details about Creative Map: Build and create with unlimited resources!</p>
+            </div>
+          </div>
+
+          <!-- Apocalypse Map -->
+          <div id="apocalysemap" class="main2_feature" onclick="toggleDetails('details-apocalypse-map')">
+            <img class="main2_feature_img" alt="Map Image" src="media/apocalysemap.png">
+            <a class="main2_feature_headline">Apocalypse Map</a>
+            <a class="main2_feature_text">Explore amazing worlds and regions in this interactive map.</a>
+            <div id="details-apocalypse-map" class="map-details">
+              <p>Details about Apocalypse Map: Survive and explore post-apocalyptic terrains!</p>
+            </div>
+          </div>
+
+          <!-- Parkour Map -->
+          <div id="parkourmap" class="main2_feature" onclick="toggleDetails('details-parkour-map')">
+            <img class="main2_feature_img" alt="Map Image" src="media/parkourmap.png">
+            <a class="main2_feature_headline">Parkour Map</a>
+            <a class="main2_feature_text">Embark on an epic journey filled with challenges and rewards!</a>
+            <div id="details-parkour-map" class="map-details">
+              <p>Details about Parkour Map: Jump, climb, and race through thrilling parkour challenges!</p>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      
+      <div id="player-stats" class="main2">
+        <a class="headline">Player Statistics</a>
+        <div class="player-stats-container">
+            <div class="player-search">
+                <input type="text" id="player-username" placeholder="Enter Player Username">
+                <button onclick="fetchPlayerStats()">Search</button>
+                <button onclick="viewAllPlayers()">View All Players</button>
+            </div>
+            <div id="player-info">
+                <!-- Player stats will be displayed dynamically -->
+                <div id="player-error" style="display:none; color: red;">Player not found.</div>
+                <div id="player-details" style="display:none;">
+                    <img id="player-avatar" src="" alt="Player Avatar" width="100" height="100" style="border-radius: 50%; border: 2px solid #fff;">
+                    <div>
+                        <h3>Player: <span id="player-name"></span></h3>
+                        <p><strong>UUID:</strong> <span id="player-uuid"></span></p>
+                        <p><strong>Last Login:</strong> <span id="player-last-login"></span></p>
+                        <p><strong>Current Game:</strong> <span id="player-current-game"></span></p>
+                        <p><strong>Map:</strong> <span id="player-map"></span></p>
+                        <p><strong>Score:</strong> <span id="player-score"></span></p>
+                        <p><strong>Level:</strong> <span id="player-level"></span></p>
+                        <p><strong>Status:</strong> <span id="player-status"></span></p>
+                        <p><strong>Guild:</strong> <span id="player-guild"></span></p>
+                        <p><strong>Karma:</strong> <span id="player-karma"></span></p>
+                        <p><strong>Achievements:</strong> <span id="player-achievements"></span></p>
+                        <p><strong>Rank:</strong> <span id="player-rank"></span></p>
+                        <p><strong>Playtime:</strong> <span id="player-playtime"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div id="all-players" style="display:none;">
+              <h3>All Players</h3>
+              <button onclick="hideAllPlayers()">Hide All Players</button>
+              <table border="1" cellspacing="0" cellpadding="5">
+                  <thead>
+                      <tr>
+                          <th>Player Name</th>
+                          <th>UUID</th>
+                          <th>Last Login</th>
+                          <th>Current Game</th>
+                          <th>Map</th>
+                          <th>Score</th>
+                          <th>Level</th>
+                          <th>Status</th>
+                          <th>Action</th>
+                      </tr>
+                  </thead>
+                  <tbody id="players-table-body">
+                      <!-- Rows will be populated dynamically -->
+                  </tbody>
+              </table>
+          </div>
+      </div>
+      <div id="player-profile" style="display: none;">
+        <h2>Player Profile</h2>
+        <div class="profile-summary">
+            <div class="avatar-section">
+                <img id="profile-avatar" src="" alt="Player Avatar" width="128">
+                <p><strong>Name:</strong> <span id="player-name"></span></p>
+                <p><strong>UUID:</strong> <span id="profile-uuid"></span></p>
+            </div>
+            <div class="general-stats">
+                <p><strong>Last Login:</strong> <span id="profile-last-login"></span></p>
+                <p><strong>Total Playtime:</strong> <span id="profile-playtime"></span></p>
+                <p><strong>Current Server:</strong> <span id="profile-server"></span></p>
+                <p><strong>Achievements:</strong> <span id="profile-achievements"></span></p>
+                <button onclick="closeProfile()">Close</button>
+            </div>
+        </div>
+      </div>
+    </div>
+    </div>    
+    <div id="no-input-section" class="no-input-section" style="text-align: center; display: flex; justify-content: center; align-items: center; height: 100px;">
+        <p>Cette section est réservée et ne peut pas être modifiée par l'utilisateur.</p>
+      </div>
+      <div id="about"></div>
+      <div class="main5">
+        <a class="headline">Who we are</a>
+        <div class="main5_admin_div">
+          <!-- Admin 1 -->
+          <div class="main5_admins_div main5_admins_dev_type2">
+            <img class="main5_admins_img" alt="admin member img" src="https://crafatar.com/avatars/069a79f4-44e9-4726-a5be-fca90e38aaf5?overlay=true">
+
+            <div class="main5_admins_description_div">
+              <a class="main5_admins_description_rank main5_admins_description_rank_owner">[Owner]</a>
+              <a class="main5_admins_description_title" href="https://example.com">Basile Le-Thiec</a>
+              <a class="main5_admins_description">Owner<br>Description</a>
+            </div>
+          </div>
+      
+          <!-- Admin 2 -->
+          <div class="main5_admins_div main5_admins_dev_type1">
+            <img class="main5_admins_img" alt="admin member img" src="https://crafatar.com/avatars/c06f89064c8a49119c29ea1dbd1aab82?overlay=true">
+            <div class="main5_admins_description_div">
+              <a class="main5_admins_description_rank main5_admins_description_rank_admin">[Admin]</a>
+              <a class="main5_admins_description_title" href="https://example.com">Christopher Antonio</a>
+              <a class="main5_admins_description">Admin<br>Description</a>
+            </div>
+          </div>
+      
+          <!-- Admin 3 -->
+          <div class="main5_admins_div main5_admins_dev_type2">
+            <img class="main5_admins_img" alt="admin membea/admin3.png">
+            <div class="main5_admins_description_div">
+              <a class="main5_admins_description_rank main5_admins_description_rank_admin">[Admin]</a>
+              <a class="main5_admins_description_title" href="https://example.com">Evan Vallet</a>
+              <a class="main5_admins_description">Admin<br>Description</a>
+            </div>
+          </div>
+      
+          <!-- Admin 4 -->
+          <div class="main5_admins_div main5_admins_dev_type1">
+            <img class="main5_admins_img" alt="admin member img" src="https://crafatar.com/avatars/069a79f4-44e9-4726-a5be-fca90e38aaf5?overlay=true">
+            <div class="main5_admins_description_div">
+              <a class="main5_admins_description_rank main5_admins_description_rank_admin">[Admin]</a>
+              <a class="main5_admins_description_title" href="https://example.com">Justin Chaleard</a>
+              <a class="main5_admins_description">Admin<br>Description</a>
+            </div>
+          </div>
+        </div>
+          </div>
+          <div class="main5_supporters_div">
+            <img class="main5_supporters_img" alt="supporters member img" src="media/supporter1.png">
+            <div class="main5_supporters_description_div">
+              <a class="main5_supporters_description_rank main5_supporters_description_rank_supporter">[Supporter]</a>
+              <a class="main5_supporters_description_title">Replacable Supporter 2</a>
+              <a class="main5_supporters_description">Supporter<br>Description</a>
+            </div>
+          </div>
+          <div class="main5_supporters_div">
+            <img class="main5_supporters_img" alt="supporters member img" src="media/supporter2.png">
+            <div class="main5_supporters_description_div">
+              <a class="main5_supporters_description_rank main5_supporters_description_rank_supporter">[Supporter]</a>
+              <a class="main5_supporters_description_title">Replacable Supporter 3</a>
+              <a class="main5_supporters_description">Supporter<br>Description</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="discord-section" class="main2">
+        <a class="headline">Join the Discord</a>
+        <div class="main4_dc_div">
+            <iframe class="main4_dc_widget" 
+                    src="https://discord.com/widget?id=YOUR_DISCORD_SERVER_ID&theme=dark" 
+                    width="350" 
+                    height="500" 
+                    allowtransparency="true" 
+                    frameborder="0" 
+                    sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
+            </iframe>
+            <div class="main4_dc_description_div">
+                <a class="main4_dc_description_title">Let's talk!</a>
+                <a class="main4_dc_description">
+                    ・Meet other players<br>
+                    ・Ask questions<br>
+                    ・Get notified about updates<br>
+                    ・Give feedback<br><br>
+                    & more!
+                </a>
+                <a href="https://discord.gg/YOUR_INVITE_LINK" class="main4_dc_button_a">
+                    <div class="main4_dc_button">Join</div>
+                </a>
+            </div>
+        </div>
+    </div>
+      <div id="join"></div>
+      <div class="main3">
+        <a class="headline">How to join</a>
+        <div class="main3_join_div_div">
+          <div class="main3_join_div">
+            <a class="main3_join_title">Java</a>
+            <div class="main3_join_content_div">
+              <div class="main3_join_categories">
+                <a>IP:</a>
+                <a>Version:</a>
+              </div>
+              <div class="main3_join_values">
+                <a>play.example.com</a>
+                <a>1.20.1</a>
+              </div>
+            </div>
+          </div>
+          <div class="main3_join_div">
+            <a class="main3_join_title">Bedrock</a>
+            <div class="main3_join_content_div">
+              <div class="main3_join_categories">
+                <a>IP:</a>
+                <a>Port:</a>
+              </div>
+              <div class="main3_join_values">
+                <a>be.example.com</a>
+                <a>69420</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal Structure -->
+    <div id="mapModal" class="modal">
+      <span class="close">&times;</span>
+      <img class="modal-content" id="modalImage">
+      <div id="caption"></div>
+    </div>
+
+    <script>
+      // Fonction pour ouvrir le modal avec l'image cliquée
+      function openModal(src, alt) {
+        const modal = document.getElementById("mapModal");
+        const modalImg = document.getElementById("modalImage");
+        const captionText = document.getElementById("caption");
+        modal.style.display = "block";
+        modalImg.src = src;
+        captionText.innerHTML = alt;
+      }
+
+      // Fonction pour fermer le modal
+      const span = document.getElementsByClassName("close")[0];
+      span.onclick = function() { 
+        const modal = document.getElementById("mapModal");
+        modal.style.display = "none";
+      }
+
+      // Attacher l'événement de clic aux cartes
+      document.querySelectorAll('.main2_feature').forEach(function(feature) {
+        feature.onclick = function() {
+          const imgSrc = this.querySelector('img').src;
+          const imgAlt = this.querySelector('.main2_feature_headline').innerText;
+          openModal(imgSrc, imgAlt);
+        }
+      });
+    </script>
+
+    <footer class="copyright_div">
+      <a href="https://github.com/FQQD/MCServer-Web-Template" class="copyright">Made by Team Basile for SAE </a>
+    </footer>
+
+    <script>
+      // Simuler des données de joueur
+      const mockData = {
+        "TestPlayer": {
+          uuid: "1234-5678-91011",
+          lastLogin: "2024-12-04",
+          stats: {
+            "Kills": 50,
+            "Deaths": 20,
+            "Blocks Broken": 12345,
+            "Blocks Placed": 6789,
+            "Playtime": "12h 34m",
+            "Level": 42
+          }
+        }
+      };
+    
+    async function fetchPlayerStats() {
+      const username = document.getElementById('player-username').value.trim();
+      try {
+        const response = await fetch(`/api/player/${username}`);
+        if (!response.ok) {
+          throw new Error('Player not found');
+        }
+        const player = await response.json();
+        showPlayerStats(player);
+        document.getElementById("player-error").style.display = "none";
+      } catch (error) {
+        document.getElementById("player-error").style.display = "block";
+      }
+    }
+
+    async function viewAllPlayers() {
+      try {
+        const response = await fetch('/api/players');
+        const players = await response.json();
+        const tableBody = document.getElementById('players-table-body');
+        tableBody.innerHTML = ''; // Efface les anciens joueurs
+
+        Object.entries(players).forEach(([name, player]) => {
+          const row = `
+            <tr>
+              <td>${name}</td>
+              <td>${player.uuid}</td>
+              <td>${player.lastLogin}</td>
+              <td>${player.currentGame}</td>
+              <td>${player.map}</td>
+              <td>${player.score}</td>
+              <td>${player.level}</td>
+              <td>${player.status}</td>
+              <td><button onclick="showPlayerStats('${name}')">View Profile</button></td>
+            </tr>
+          `;
+          tableBody.insertAdjacentHTML('beforeend', row);
+        });
+
+        document.getElementById('all-players').style.display = 'block';
+        document.getElementById('player-info').style.display = 'none';
+      } catch (error) {
+        console.error('Error fetching players:', error);
+      }
+    }
+
+    function showPlayerStats(player) {
+      document.getElementById('player-avatar').src = player.avatar;
+      document.getElementById("player-avatar").alt = `Avatar of ${player.name}`;
+      document.getElementById('player-name').textContent = player.name;
+      document.getElementById('player-uuid').textContent = player.uuid;
+      document.getElementById('player-last-login').textContent = player.lastLogin;
+      document.getElementById('player-current-game').textContent = player.currentGame;
+      document.getElementById('player-map').textContent = player.map;
+      document.getElementById('player-score').textContent = player.score;
+      document.getElementById('player-level').textContent = player.level;
+      document.getElementById('player-status').textContent = player.status;
+
+      document.getElementById('player-details').style.display = 'flex';
+      document.getElementById('player-info').style.display = 'block';
+      document.getElementById('all-players').style.display = 'none';
+    }
+
+    function hideAllPlayers() {
+      document.getElementById('all-players').style.display = 'none';
+      document.getElementById('player-info').style.display = 'block';
+    }
+    </script>
+    <script>
+      // Liste des joueurs
+      const players = {
+        'Steve': {
+          avatar: 'https://crafatar.com/avatars/123e4567-e89b-12d3-a456-426614174000',
+          uuid: '123e4567-e89b-12d3-a456-426614174000',
+          name: 'Steve',
+          lastLogin: '2024-12-01 10:30:45',
+          currentGame: 'Skyblock',
+          map: 'Survival Map',
+          score: 1560,
+          level: 15,
+          status: 'Online'
+        },
+        'Alex': {
+          avatar: 'https://crafatar.com/avatars/8667ba71-b85a-4004-af54-457a9734eed7',
+          uuid: '123e4567-e89b-12d3-a456-426614174001',
+          name: 'Alex',
+          lastLogin: '2024-12-03 14:12:22',
+          currentGame: 'Bedwars',
+          map: 'Parkour Map',
+          score: 2350,
+          level: 22,
+          status: 'Offline'
+        },
+        'Basile': {
+          avatar: 'https://crafatar.com/avatars/123e4567-e89b-12d3-a456-426614174002',
+          uuid: '123e4567-e89b-12d3-a456-426614174002',
+          name: 'Basile',
+          lastLogin: '2024-12-05 16:45:12',
+          currentGame: 'Creative World',
+          map: 'Creative Map',
+          score: 3000,
+          level: 25,
+          status: 'Online'
+        },
+        'Justin': {
+          avatar: 'https://crafatar.com/avatars/123e4567-e89b-12d3-a456-426614174003',
+          uuid: '123e4567-e89b-12d3-a456-426614174003',
+          name: 'Justin',
+          lastLogin: '2024-12-04 10:15:22',
+          currentGame: 'Adventure',
+          map: 'Adventure Map',
+          score: 1850,
+          level: 18,
+          status: 'Online'
+        },
+        'Evan': {
+          avatar: 'https://crafatar.com/avatars/123e4567-e89b-12d3-a456-426614174004',
+          uuid: '123e4567-e89b-12d3-a456-426614174004',
+          name: 'Evan',
+          lastLogin: '2024-12-02 08:30:00',
+          currentGame: 'Survival',
+          map: 'Survival Map',
+          score: 2100,
+          level: 20,
+          status: 'Offline'
+        },
+        'Christo': {
+          avatar: 'https://crafatar.com/avatars/123e4567-e89b-12d3-a456-426614174005',
+          uuid: '123e4567-e89b-12d3-a456-426614174005',
+          name: 'Christo',
+          lastLogin: '2024-12-06 12:00:00',
+          currentGame: 'Parkour',
+          map: 'Parkour Map',
+          score: 2500,
+          level: 23,
+          status: 'Online'
+        }
+      };
+
+      // Fonction utilitaire pour récupérer un joueur par son nom
+      function getPlayer(playerName) {
+        return players[playerName] || null;
+      }
+    
+      // Fonction pour afficher les stats d'un joueur
+      function showPlayerStats(playerName) {
+        const player = players[playerName];
+        if (player) {
+          document.getElementById('player-avatar').src = `https://crafatar.com/avatars/${player.uuid}?overlay=true`;
+          document.getElementById("player-avatar").alt = `Avatar of ${player.name}`;
+          document.getElementById('player-name').textContent = player.name;
+          document.getElementById('player-uuid').textContent = player.uuid;
+          document.getElementById('player-last-login').textContent = player.lastLogin;
+          document.getElementById('player-current-game').textContent = player.currentGame;
+          document.getElementById('player-map').textContent = player.map;
+          document.getElementById('player-score').textContent = player.score;
+          document.getElementById('player-level').textContent = player.level;
+          document.getElementById('player-status').textContent = player.status;
+
+    
+          document.getElementById('player-details').style.display = 'flex';
+          document.getElementById('player-info').style.display = 'block';
+          document.getElementById('all-players').style.display = 'none';
+        } else {
+          alert('Player not found!');
+        }
+      }
+    
+
+      function openModal() {
+        const modal = document.getElementById("player-details");
+        modal.style.display = "block";
+        modal.classList.add("fadeIn");
+      }
+
+      function closeModal() {
+        const modal = document.getElementById("player-details");
+        modal.classList.remove("fadeIn");
+        modal.style.display = "none";
+      }
+
+      function fetchPlayerStats() {
+        const username = document.getElementById("player-username").value.trim();
+        const player = getPlayer(username);
+
+      if (player) {
+        showPlayerStats(username);
+        document.getElementById("player-error").style.display = "none";
+      } else {
+        document.getElementById("player-error").style.display = "block";
+      }
+    }
+
+    window.onclick = function (event) {
+    const modal = document.getElementById("player-details");
+    if (event.target === modal) {
+      closeModal();
+    }
+  };
+
+      // Fonction pour afficher la liste des joueurs
+      function viewAllPlayers() {
+        const tableBody = document.getElementById('players-table-body');
+        tableBody.innerHTML = ''; // Efface les anciens joueurs
+    
+        // Ajoute tous les joueurs au tableau
+        Object.entries(players).forEach(([name, player]) => {
+          const row = `
+            <tr>
+              <td>${name}</td>
+              <td>${player.uuid}</td>
+              <td>${player.lastLogin}</td>
+              <td>${player.currentGame}</td>
+              <td>${player.map}</td>
+              <td>${player.score}</td>
+              <td>${player.level}</td>
+              <td>${player.status}</td>
+              <td><button onclick="showPlayerStats('${name}')">View Profile</button></td>
+            </tr>
+          `;
+          tableBody.insertAdjacentHTML('beforeend', row);
+        });
+    
+        // Affiche le tableau et masque les autres sections
+        document.getElementById('all-players').style.display = 'block';
+        document.getElementById('player-info').style.display = 'none';
+      }
+    
+      // Fonction pour cacher la liste des joueurs
+      function hideAllPlayers() {
+        document.getElementById('all-players').style.display = 'none';
+        document.getElementById('player-info').style.display = 'block';
+      }
+    </script>
+    
+  
+    
+  </body>
+</html>

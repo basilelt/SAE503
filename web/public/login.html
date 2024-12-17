@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Login - MCServer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #121212;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        .login-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .btn-custom {
+            background-color: #7289da;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container vh-100 d-flex justify-content-center align-items-center">
+        <div class="login-container text-center">
+            <h2>Login to MCServer</h2>
+            <!--
+            <form id="loginForm">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" class="form-control my-3" placeholder="Username" required>
+                
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" class="form-control my-3" placeholder="Password" required>
+                
+                <button type="submit" class="btn btn-custom w-100">Login</button>
+            </form>
+            -->
+            <div id="error" class="text-danger d-none">Nom d’utilisateur ou mot de passe incorrect.</div>
+        </div>
+    </div>
+
+    <!-- Restaurer le script de gestion de la connexion -->
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorDiv = document.getElementById('error');
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ identifier: username, password: password })
+                });
+                const data = await response.json();
+
+                if(data.success) {
+                  localStorage.setItem('currentUser', data.username);
+                    window.location.href = 'index.html';
+                } else {
+                    errorDiv.classList.remove('d-none');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                errorDiv.classList.remove('d-none');
+            }
+        });
+    </script>
+</body>
+</html>
