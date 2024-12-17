@@ -2,6 +2,12 @@
 - name: Deploy Docker registry
   hosts: master
   tasks:
+    - name: Install kubernetes Python library
+      pip:
+        name: kubernetes
+        state: present
+        executable: pip3
+
     - name: Create registry namespace
       kubernetes.core.k8s:
         state: present
