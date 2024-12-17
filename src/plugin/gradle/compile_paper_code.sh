@@ -1,6 +1,6 @@
 #!/bin/bash
 # To allow the script to work correctly,
-# edit your gradle build files, to build 
+# edit your gradle build files to build 
 # the plugin jar at the root of the project
 
 set -e
@@ -8,9 +8,16 @@ set -e
 BUILD_DIR="/app/build/paper"
 mkdir -p "$BUILD_DIR"
 
+COMPILED_DIR="/app/compiled_code/paper"
+mkdir -p "$COMPILED_DIR"
+
 for dir in /app/source_code/paper/*; do
     if [ -d "$dir" ]; then
         project_name=$(basename "$dir")
+        if ls "$COMPILED_DIR"/*"$project_name"*.jar 1> /dev/null 2>&1; then
+            echo "Jar file for project $project_name already exists. Skipping."
+            continue
+        fi
         echo "Project found: $project_name"
         cp -r "$dir" "$BUILD_DIR"
         echo "Building Gradle project in $dir"
@@ -19,19 +26,17 @@ for dir in /app/source_code/paper/*; do
             echo "Found gradlew in $dir"
             chmod +x gradlew
             ./gradlew clean build
-            echo "Copying JAR file to /app/compiled_code/velocity/"
+            echo "Copying JAR file to $COMPILED_DIR"
             JAR_FILE=$(find . -maxdepth 1 -name "*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" | head -n 1)
             echo "JAR file found: $JAR_FILE"
             if [ -n "$JAR_FILE" ]; then
-                DEST_DIR="/app/compiled_code/paper/"
-                mkdir -p "$DEST_DIR"
-                cp "$JAR_FILE" "$DEST_DIR"
+                cp "$JAR_FILE" "$COMPILED_DIR"
                 echo "$project_name built successfully."
             else
                 echo "No JAR file found for $project_name."
             fi
         else
-            echo "No Gradle build file found in $dir, skipping"
+            echo "No gradlew found in $dir, skipping"
             continue
         fi
     fi
