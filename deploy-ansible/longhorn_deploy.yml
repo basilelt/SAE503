@@ -128,6 +128,7 @@
         kubectl exec data-loader -- mkdir -p /lobby-storage/plugins/Plan
         kubectl exec data-loader -- mkdir -p /lobby-storage/plugins/LibertyBans
         kubectl exec data-loader -- mkdir -p /lobby-storage/plugins/BlueMap/storages
+        kubectl exec data-loader -- mkdir -p /lobby-storage/plugins/rustyconnector-paper/metadata
         kubectl exec data-loader -- mkdir -p /lobby-storage/world
 
         # Create game-server-storage directories
@@ -135,6 +136,7 @@
         kubectl exec data-loader -- mkdir -p /game-server-storage/plugins/Plan
         kubectl exec data-loader -- mkdir -p /game-server-storage/plugins/LibertyBans
         kubectl exec data-loader -- mkdir -p /game-server-storage/plugins/BlueMap/storages
+        kubectl exec data-loader -- mkdir -p /game-server-storage/plugins/rustyconnector-paper/metadata
 
         # Now copy the files
         kubectl cp src/plugin/source_code/paper/. data-loader:/source-paper/
@@ -147,12 +149,16 @@
         kubectl cp src/server/common/lobby-files/db_config/plan_config.yml data-loader:/lobby-storage/plugins/Plan/config.yml
         kubectl cp src/server/common/lobby-files/db_config/sql.yml data-loader:/lobby-storage/plugins/LibertyBans/sql.yml
         kubectl cp src/server/common/lobby-files/db_config/sql.conf data-loader:/lobby-storage/plugins/BlueMap/storages/sql.conf
+        kubectl cp src/server/common/lobby-files/rusty/private/private.key data-loader:/lobby-storage/plugins/rustyconnector-paper/metadata/private.key
+        kubectl cp src/server/common/lobby-files/rusty/connectors.yml data-loader:/lobby-storage/plugins/rustyconnector-paper/connectors.yml
         kubectl cp src/server/common/lobby-files/mapLobby/Natural-Lobby/. data-loader:/lobby-storage/world/
 
         kubectl cp src/server/common/game-server-files/db_config/luckperms_config.yml data-loader:/game-server-storage/plugins/LuckPerms/config.yml
         kubectl cp src/server/common/game-server-files/db_config/plan_config.yml data-loader:/game-server-storage/plugins/Plan/config.yml
         kubectl cp src/server/common/game-server-files/db_config/sql.yml data-loader:/game-server-storage/plugins/LibertyBans/sql.yml
         kubectl cp src/server/common/game-server-files/db_config/sql.conf data-loader:/game-server-storage/plugins/BlueMap/storages/sql.conf
+        kubectl cp src/server/common/game-server-files/rusty/private/private.key data-loader:/game-server-storage/plugins/rustyconnector-paper/metadata/private.key
+        kubectl cp src/server/common/game-server-files/rusty/connectors.yml data-loader:/game-server-storage/plugins/rustyconnector-paper/connectors.yml
       args:
         chdir: /home/{{ ansible_user }}
 
@@ -166,11 +172,13 @@
         kubectl exec data-loader -- ls -la /lobby-storage/plugins/Plan/
         kubectl exec data-loader -- ls -la /lobby-storage/plugins/LibertyBans/
         kubectl exec data-loader -- ls -la /lobby-storage/plugins/BlueMap/storages/
+        kubectl exec data-loader -- ls -la /lobby-storage/plugins/rustyconnector-paper/metadata/
         kubectl exec data-loader -- ls -la /lobby-storage/world/
         kubectl exec data-loader -- ls -la /game-server-storage/plugins/LuckPerms/
         kubectl exec data-loader -- ls -la /game-server-storage/plugins/Plan/
         kubectl exec data-loader -- ls -la /game-server-storage/plugins/LibertyBans/
         kubectl exec data-loader -- ls -la /game-server-storage/plugins/BlueMap/storages/
+        kubectl exec data-loader -- ls -la /game-server-storage/plugins/rustyconnector-paper/metadata/
       register: file_check
 
     - name: Show copied files

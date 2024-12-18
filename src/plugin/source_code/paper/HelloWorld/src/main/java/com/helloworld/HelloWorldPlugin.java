@@ -40,7 +40,7 @@ public class HelloWorldPlugin extends JavaPlugin {
                         UUID uuid = player.getUniqueId();
 
                         // Construire l'URI avec les paramètres
-                        URIBuilder uriBuilder = new URIBuilder("http://172.24.121.147:5000/create_server");
+                        URIBuilder uriBuilder = new URIBuilder("http://flask.default.svc.cluster.local:5000/create_server");
                         uriBuilder.addParameter("uuid", uuid.toString());
                         HttpPost request = new HttpPost(uriBuilder.build());
                         String response = httpClient.execute(request, httpResponse ->
@@ -69,7 +69,7 @@ public class HelloWorldPlugin extends JavaPlugin {
                         UUID uuid = player.getUniqueId();
 
                         // Construire l'URI avec les paramètres
-                        URIBuilder uriBuilder = new URIBuilder("http://172.24.121.147:5000/stop_server");
+                        URIBuilder uriBuilder = new URIBuilder("http://flask.default.svc.cluster.local:5000/stop_server");
                         uriBuilder.addParameter("uuid", uuid.toString());
                         HttpPost request = new HttpPost(uriBuilder.build());
 

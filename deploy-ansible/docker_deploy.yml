@@ -70,11 +70,28 @@
         rsync_opts:
           - "--chown={{ ansible_user }}:{{ ansible_user }}"
 
+    - name: Create SSH directory
+      become: false
+      file:
+        path: /home/{{ ansible_user }}/src/plugin/api/ssh
+        state: directory
+        mode: '0755'
+
+    - name: Copy SSH key for vagrant host
+      become: false
+      copy:
+        src: ~/.ssh/vagrant_common_key
+        dest: /home/{{ ansible_user }}/src/plugin/api/ssh/vagrant_common_key
+        mode: '0600'
+
     - name: Build and tag Docker images
       shell: |
+        docker pull redis
+        docker tag redis {{ registry_ip }}:5000/redis
         docker build -t {{ registry_ip }}:5000/mysql server/mysql
         docker build -t {{ registry_ip }}:5000/maven plugin/maven
         docker build -t {{ registry_ip }}:5000/gradle plugin/gradle
+        docker build -t {{ registry_ip }}:5000/flask -f plugin/api/Dockerfile .
         docker build -t {{ registry_ip }}:5000/game-server -f server/common/game-server-files/Dockerfile .
         docker build -t {{ registry_ip }}:5000/lobby -f server/common/lobby-files/Dockerfile .
         docker build -t {{ registry_ip }}:5000/proxy -f server/common/proxy-files/Dockerfile .
@@ -83,9 +100,11 @@
 
     - name: Push images to the registry
       shell: |
+        docker push {{ registry_ip }}:5000/redis
         docker push {{ registry_ip }}:5000/mysql
         docker push {{ registry_ip }}:5000/maven
         docker push {{ registry_ip }}:5000/gradle
+        docker push {{ registry_ip }}:5000/flask
         docker push {{ registry_ip }}:5000/game-server
         docker push {{ registry_ip }}:5000/lobby
         docker push {{ registry_ip }}:5000/proxy

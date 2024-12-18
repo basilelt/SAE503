@@ -14,6 +14,19 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: redis
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+  selector:
+    app: redis
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: game-server
 spec:
   type: ClusterIP
@@ -49,3 +62,16 @@ spec:
       protocol: TCP
   selector:
     app: proxy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5000
+      targetPort: 5000
+      protocol: TCP
+  selector:
+    app: flask

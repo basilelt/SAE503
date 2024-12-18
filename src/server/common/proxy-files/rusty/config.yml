@@ -46,11 +46,11 @@ disabled_commands:
 - disabledcommandhere
 servers:
   lobby:
-    address: lobby:25565
+    address: lobby.default.svc.cluster.loca:25565
     restricted: false
     motd: ${CFG_MOTD}
-  srv1:
-    address: srv1:25565
+  game_srv:
+    address: game-server.default.svc.cluster.local:25565
     resticted: false
     motd: ${CFG_MOTD}
 

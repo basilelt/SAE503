@@ -23,12 +23,12 @@ services:
       hostname: redis
       restart: on-failure
       volumes:
-      - redis_data:/usr/local/etc/redis/
-      ports:
-          - 6379:6379
+      - redis_data:/usr/local/etc/redis
       depends_on:
         mysql:
           condition: service_healthy
+      networks:
+        - minecraft
 
   maven:
     build: ./plugin/maven
@@ -111,6 +111,15 @@ services:
       game-server:
         condition: service_started
       lobby:
+        condition: service_started
+    networks:
+      - minecraft
+  
+  flask:
+    build: ./plugin/api
+    container_name: flask
+    depends_on:
+      proxy:
         condition: service_started
     networks:
       - minecraft

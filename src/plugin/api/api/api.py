@@ -1,12 +1,49 @@
 # FILE: api.py
 from flask import Flask, request
 import subprocess
+import os
 
 app = Flask(__name__)
 mapid = []
 upserv = []
+
+def apply_kubernetes_configs(pod_yaml, storage_yaml):
+    yaml_dir = "/app/tmp"
+    os.makedirs(yaml_dir, exist_ok=True)
+    
+    pod_path = os.path.join(yaml_dir, "pod.yaml")
+    storage_path = os.path.join(yaml_dir, "storage.yaml")
+    
+    with open(pod_path, 'w') as f:
+        f.write(pod_yaml)
+    
+    with open(storage_path, 'w') as f:
+        f.write(storage_yaml)
+
+    host = os.getenv("KUBE_HOST")
+    ssh_user = os.getenv("SSH_USER")
+    
+    # Add host key to known hosts
+    subprocess.run([
+        "ssh-keyscan", "-H", host, ">> /root/.ssh/known_hosts"
+    ], check=True)
+    
+    # Apply configs
+    for config in [storage_path, pod_path]:
+        result = subprocess.run([
+            "ssh",
+            "-i", "/root/.ssh/id_vagrant_common_key",
+            f"{ssh_user}@{host}",
+            f"kubectl apply -f {os.path.basename(config)}"
+        ], check=True)
+        
+        if result.returncode != 0:
+            raise Exception(f"Failed to apply {config}")
+
 @app.route('/create_server', methods=['POST'])
 def create_server():
+    registry = os.getenv("REGISTRY")
+
     # Récupérer l'UUID envoyé par le plugin
     uuid = request.args.get('uuid')
     for i in mapid:
@@ -38,7 +75,7 @@ metadata:
 spec:
   containers:
   - name: minecraft-server
-    image: itzg/minecraft-server
+    image: {registry}:5000/game-server
     ports:
     - containerPort: 25565
     env:
@@ -54,14 +91,7 @@ spec:
     persistentVolumeClaim:
       claimName: {uuid}-pvc"""
 
-    with open('pod.yaml', 'w') as f:
-        f.write(pod_yaml)
-
-    with open('storage.yaml', 'w') as f:
-        f.write(storage_yaml)
-
-    subprocess.run(["ssh", "vagrant@192.168.30.11", "kubectl apply -f storage.yaml"])
-    subprocess.run(["ssh", "utilisateur@serveur_distant", "kubectl apply -f pod.yaml"])
+    apply_kubernetes_configs(pod_yaml, storage_yaml)
 
     mapid.append(uuid)
     upserv.append(uuid)

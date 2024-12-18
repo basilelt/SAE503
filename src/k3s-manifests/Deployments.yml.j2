@@ -23,7 +23,7 @@ spec:
           mountPath: /var/lib/mysql
         readinessProbe:
           exec:
-            command: ["mysqladmin", "ping", "-h", "localhost"]
+            command: ["mariadb-admin", "ping", "-h", "localhost"]
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 10
@@ -99,6 +99,34 @@ spec:
         persistentVolumeClaim:
           claimName: source-velocity-pvc
       restartPolicy: Never
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      initContainers:
+      - name: wait-for-mysql
+        image: busybox
+        command: ['sh', '-c', 'until nc -z mysql.default.svc.cluster.local 3306; do echo waiting for mysql; sleep 2; done;']
+      containers:
+      - name: redis
+        image: {{ registry_ip }}:5000/redis
+        volumeMounts:
+        - name: redis-storage
+          mountPath: /usr/local/etc/redis
+      volumes:
+      - name: redis-storage
+        persistentVolumeClaim:
+          claimName: redis-pvc
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -207,3 +235,20 @@ spec:
       - name: compiled-velocity
         persistentVolumeClaim:
           claimName: compiled-velocity-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask
+spec:
+  selector:
+    matchLabels:
+      app: flask
+  template:
+    metadata:
+      labels:
+        app: flask
+    spec:
+      containers:
+      - name: flask
+        image: {{ registry_ip }}:5000/flask
