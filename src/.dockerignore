@@ -1,1 +1,7 @@
 Dockerfile
+.gitignore
+.gitattributes
+.github
+.git
+*.md
+*.txt

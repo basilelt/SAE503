@@ -1,5 +1,6 @@
 services:
   mysql:
+    image: localhost:5000/mysql
     build: ./server/mysql
     container_name: mysql
     environment:
@@ -8,16 +9,17 @@ services:
       MYSQL_USER: minecraft
       MYSQL_PASSWORD: minecraft
     volumes:
-      - mysql_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
+      - ./volumes/mysql_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 10s
       retries: 5
+    networks:
+      - minecraft
 
   maven:
+    image: localhost:5000/maven
     build: ./plugin/maven
     container_name: maven
     volumes:
@@ -27,6 +29,7 @@ services:
       - ./plugin/source_code/velocity:/app/source_code/velocity
 
   gradle:
+    image: localhost:5000/gradle
     build: ./plugin/gradle
     container_name: gradle
     volumes:
@@ -36,11 +39,12 @@ services:
       - ./plugin/source_code/velocity:/app/source_code/velocity
 
   game-server:
+    image: localhost:5000/game-server
     build: 
       context: ./
       dockerfile: ./server/common/game-server-files/Dockerfile
     volumes:
-      - game-server-data:/data
+      - game-server:/data
       - ./plugin/compiled_code/paper:/data/compiled_plugins
     environment:
       - MYSQL_HOST=mysql
@@ -55,8 +59,11 @@ services:
         condition: service_completed_successfully
       gradle:
         condition: service_completed_successfully
+    networks:
+      - minecraft
 
   lobby:
+    image: localhost:5000/lobby
     build: 
       context: ./
       dockerfile: ./server/common/lobby-files/Dockerfile
@@ -74,8 +81,11 @@ services:
         condition: service_healthy
       game-server:
         condition: service_started
+    networks:
+      - minecraft
 
   proxy:
+    image: localhost:5000/proxy
     build: 
       context: ./
       dockerfile: ./server/common/proxy-files/Dockerfile
@@ -95,9 +105,13 @@ services:
         condition: service_started
       lobby:
         condition: service_started
+    networks:
+      - minecraft
 
 volumes:
+  game-server:
   lobby-data:
-  game-server-data:
   proxy-data:
-  mysql_data:
+
+networks:
+  minecraft:
