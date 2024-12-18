@@ -89,6 +89,14 @@
               mountPath: /source-paper
             - name: source-velocity
               mountPath: /source-velocity
+            - name: compiled-paper
+              mountPath: /compiled-paper
+            - name: compiled-velocity
+              mountPath: /compiled-velocity
+            - name: lobby-storage
+              mountPath: /lobby-storage
+            - name: game-server-storage
+              mountPath: /game-server-storage
           volumes:
           - name: source-paper
             persistentVolumeClaim:
@@ -96,15 +104,55 @@
           - name: source-velocity
             persistentVolumeClaim:
               claimName: source-velocity-pvc
+          - name: compiled-paper
+            persistentVolumeClaim:
+              claimName: compiled-paper-pvc
+          - name: compiled-velocity
+            persistentVolumeClaim:
+              claimName: compiled-velocity-pvc
+          - name: lobby-storage
+            persistentVolumeClaim:
+              claimName: lobby-pvc
+          - name: game-server-storage
+            persistentVolumeClaim:
+              claimName: game-server-pvc
         EOF
 
     - name: Wait for data-loader pod to be ready
       shell: kubectl wait --for=condition=ready pod/data-loader --timeout=120s
 
-    - name: Copy and extract source code
+    - name: Create directory structure and copy files
       shell: |
+        # Create lobby-storage directories
+        kubectl exec data-loader -- mkdir -p /lobby-storage/plugins/LuckPerms
+        kubectl exec data-loader -- mkdir -p /lobby-storage/plugins/Plan
+        kubectl exec data-loader -- mkdir -p /lobby-storage/plugins/LibertyBans
+        kubectl exec data-loader -- mkdir -p /lobby-storage/plugins/BlueMap/storages
+        kubectl exec data-loader -- mkdir -p /lobby-storage/world
+
+        # Create game-server-storage directories
+        kubectl exec data-loader -- mkdir -p /game-server-storage/plugins/LuckPerms
+        kubectl exec data-loader -- mkdir -p /game-server-storage/plugins/Plan
+        kubectl exec data-loader -- mkdir -p /game-server-storage/plugins/LibertyBans
+        kubectl exec data-loader -- mkdir -p /game-server-storage/plugins/BlueMap/storages
+
+        # Now copy the files
         kubectl cp src/plugin/source_code/paper/. data-loader:/source-paper/
         kubectl cp src/plugin/source_code/velocity/. data-loader:/source-velocity/
+
+        kubectl cp src/plugin/compiled_code/paper/. data-loader:/compiled-paper/
+        kubectl cp src/plugin/compiled_code/velocity/. data-loader:/compiled-velocity/
+
+        kubectl cp src/server/common/lobby-files/db_config/luckperms_config.yml data-loader:/lobby-storage/plugins/LuckPerms/config.yml
+        kubectl cp src/server/common/lobby-files/db_config/plan_config.yml data-loader:/lobby-storage/plugins/Plan/config.yml
+        kubectl cp src/server/common/lobby-files/db_config/sql.yml data-loader:/lobby-storage/plugins/LibertyBans/sql.yml
+        kubectl cp src/server/common/lobby-files/db_config/sql.conf data-loader:/lobby-storage/plugins/BlueMap/storages/sql.conf
+        kubectl cp src/server/common/lobby-files/mapLobby/Natural-Lobby/. data-loader:/lobby-storage/world/
+
+        kubectl cp src/server/common/game-server-files/db_config/luckperms_config.yml data-loader:/game-server-storage/plugins/LuckPerms/config.yml
+        kubectl cp src/server/common/game-server-files/db_config/plan_config.yml data-loader:/game-server-storage/plugins/Plan/config.yml
+        kubectl cp src/server/common/game-server-files/db_config/sql.yml data-loader:/game-server-storage/plugins/LibertyBans/sql.yml
+        kubectl cp src/server/common/game-server-files/db_config/sql.conf data-loader:/game-server-storage/plugins/BlueMap/storages/sql.conf
       args:
         chdir: /home/{{ ansible_user }}
 
@@ -112,6 +160,17 @@
       shell: |
         kubectl exec data-loader -- ls -la /source-paper/
         kubectl exec data-loader -- ls -la /source-velocity/
+        kubectl exec data-loader -- ls -la /compiled-paper/
+        kubectl exec data-loader -- ls -la /compiled-velocity/
+        kubectl exec data-loader -- ls -la /lobby-storage/plugins/LuckPerms/
+        kubectl exec data-loader -- ls -la /lobby-storage/plugins/Plan/
+        kubectl exec data-loader -- ls -la /lobby-storage/plugins/LibertyBans/
+        kubectl exec data-loader -- ls -la /lobby-storage/plugins/BlueMap/storages/
+        kubectl exec data-loader -- ls -la /lobby-storage/world/
+        kubectl exec data-loader -- ls -la /game-server-storage/plugins/LuckPerms/
+        kubectl exec data-loader -- ls -la /game-server-storage/plugins/Plan/
+        kubectl exec data-loader -- ls -la /game-server-storage/plugins/LibertyBans/
+        kubectl exec data-loader -- ls -la /game-server-storage/plugins/BlueMap/storages/
       register: file_check
 
     - name: Show copied files

@@ -12,6 +12,10 @@ ENV PLUGINS_FILE=/config/plugins/plugins.txt
 # Copy configuration files from the common directory
 COPY server/common/game-server-files/plugins/plugins.txt /config/plugins/plugins.txt
 COPY server/common/game-server-files/paper-global.yml /config/paper-global.yml
+COPY server/common/game-server-files/db_config/luckperms_config.yml /data/plugins/LuckPerms/config.yml
+COPY server/common/game-server-files/db_config/plan_config.yml /data/plugins/Plan/config.yml
+COPY server/common/game-server-files/db_config/sql.yml /data/plugins/LibertyBans/sql.yml
+COPY server/common/game-server-files/db_config/sql.conf /data/plugins/BlueMap/storages/sql.conf
 
 # Set volume mount point
 VOLUME /data

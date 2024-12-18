@@ -8,7 +8,7 @@ services:
       MYSQL_USER: minecraft
       MYSQL_PASSWORD: minecraft
     volumes:
-      - ./volumes/mysql_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
@@ -106,6 +106,7 @@ volumes:
   game-server:
   lobby-data:
   proxy-data:
+  mysql_data:
 
 networks:
   minecraft:
