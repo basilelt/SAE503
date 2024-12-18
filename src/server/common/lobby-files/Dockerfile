@@ -20,7 +20,7 @@ COPY server/common/lobby-files/db_config/sql.conf /data/plugins/BlueMap/storages
 COPY plugin/compiled_code/paper /data/plugins
 
 # Copy the world data
-ADD server/common/lobby-files/mapLobby/Natural-Lobby.zip /data/world
+COPY server/common/lobby-files/mapLobby/Natural-Lobby /data/world
 
 # Set volume mount point
 VOLUME /data
@@ -31,4 +31,4 @@ RUN chown -R 1000:1000 /data
 RUN chmod -R 777 /data
 
 # Default command to start the Minecraft server
-CMD ["start"]
+CMD [ "start" ]

@@ -20,13 +20,11 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     # Check if python3 is installed
     if [[ "$OSTYPE" == "darwin"* ]]; then
         info "Installing Python3.11 using Homebrew"
-        brew install python@3.11 rsync
-        info "Ensuring pip3 and venv are available"
-        # pip3 and venv are included with Python 3.11 from Homebrew
+        brew install python@3.11
     elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
         info "Installing Python3.11, python3.11-venv, and pip3 using apt-get"
         sudo apt-get update
-        sudo apt-get install -y python3.11 python3.11-venv python3-pip rsync
+        sudo apt-get install -y python3.11 python3.11-venv python3-pip
         else
             fatal "Unsupported operating system: $OSTYPE"
         fi
@@ -43,8 +41,5 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     python="$path"/.venv/bin/python
 
     $python -m pip install --upgrade pip
-    $python -m pip install -r "$path"/requirements.txt --no-input
-
-    source "$path"/.venv/bin/activate
-    ansible-galaxy collection install -r "$path"/k3s-ansible/collections/requirements.yml
+    $python -m pip install flask --no-input
 fi
