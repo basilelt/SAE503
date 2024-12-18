@@ -40,6 +40,7 @@
         "kubelet",
         "lineinfile",
         "lssubsys",
+        "luckperms",
         "mysqladmin",
         "netaddr",
         "netfilter",
