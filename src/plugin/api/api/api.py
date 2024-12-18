@@ -19,14 +19,50 @@ def create_server():
     # Créer le nom du volume en utilisant l'UUID
     volume_name = f'minecraft_data_{uuid}'
 
-    cmd = [
-        "docker", "run","-d","--name",f"{uuid}","-p", "25564:25565",
-        "-e", "EULA=TRUE", "-e", "ONLINE_MODE=FALSE",
-        "-v", f"{volume_name}:/data",
-        "itzg/minecraft-server"
-    ]
+    storage_yaml = f"""apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {uuid}-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 500Mi"""
 
-    subprocess.run(cmd, check=True)
+    pod_yaml = f"""apiVersion: v1
+kind: Pod
+metadata:
+  name: {uuid}
+spec:
+  containers:
+  - name: minecraft-server
+    image: itzg/minecraft-server
+    ports:
+    - containerPort: 25565
+    env:
+    - name: EULA
+      value: "TRUE"
+    - name: ONLINE_MODE
+      value: "FALSE"
+    volumeMounts:
+    - mountPath: /data
+      name: data-volume
+  volumes:
+  - name: data-volume
+    persistentVolumeClaim:
+      claimName: {uuid}-pvc"""
+
+    with open('pod.yaml', 'w') as f:
+        f.write(pod_yaml)
+
+    with open('storage.yaml', 'w') as f:
+        f.write(storage_yaml)
+
+    subprocess.run(["ssh", "vagrant@192.168.30.11", "kubectl apply -f storage.yaml"])
+    subprocess.run(["ssh", "utilisateur@serveur_distant", "kubectl apply -f pod.yaml"])
+
     mapid.append(uuid)
     upserv.append(uuid)
     return f"Serveur créé pour l'UUID : {uuid}"
