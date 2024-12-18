@@ -1,0 +1,181 @@
+---
+- name: Install NFS utilities
+  hosts: all
+  become: true
+  tasks:
+    - name: Install NFS common packages
+      package:
+        name: 
+          - nfs-common
+          - nfs-kernel-server
+        state: present
+
+- name: Deploy Longhorn Storage and PVCs
+  hosts: master
+  become: true
+  tasks:
+    - name: Create remote manifests directory
+      file:
+        path: /home/{{ ansible_user }}/k3s-manifests
+        state: directory
+        mode: '0755'
+        group: "{{ ansible_user }}"
+        owner: "{{ ansible_user }}"
+
+    - name: Download Longhorn manifest
+      get_url:
+        url: https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/longhorn.yaml
+        dest: /home/{{ ansible_user }}/k3s-manifests/longhorn.yaml
+        mode: '0644'
+
+    - name: Apply Longhorn manifest
+      shell: kubectl apply -f /home/{{ ansible_user }}/k3s-manifests/longhorn.yaml
+      register: longhorn_deploy
+
+    - name: Wait for Longhorn pods to be ready
+      shell: kubectl -n longhorn-system wait --for=condition=ready pod --all --timeout=300s
+      register: wait_pods
+
+    - name: Verify Longhorn deployment
+      shell: kubectl -n longhorn-system get pods
+      register: verify_pods
+      
+    - name: Show Longhorn pods status
+      debug:
+        var: verify_pods.stdout_lines
+
+    - name: Copy PVC manifest to master
+      template:
+        src: ../src/k3s-manifests/StorageRessources.yml.j2
+        dest: /home/{{ ansible_user }}/k3s-manifests/storage-resources.yml
+
+    - name: Apply PVC manifest
+      shell: kubectl apply -f /home/{{ ansible_user }}/k3s-manifests/storage-resources.yml
+      register: pvc_creation
+
+    - name: Wait for PVCs to be bound
+      shell: |
+        TOTAL_PVC=$(kubectl get pvc | grep -v NAME | wc -l)
+        BOUND_PVC=$(kubectl get pvc | grep -v NAME | grep Bound | wc -l)
+        [ "$TOTAL_PVC" -eq "$BOUND_PVC" ] || exit 1
+      register: pvc_status
+      retries: 30
+      delay: 10
+      until: pvc_status.rc == 0
+      changed_when: false
+
+    - name: Verify PVC status
+      shell: kubectl get pvc
+      register: verify_pvcs
+      
+    - name: Show PVC status
+      debug:
+        var: verify_pvcs.stdout_lines
+
+    - name: Create temporary pod for data transfer
+      shell: |
+        cat <<EOF | kubectl apply -f -
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          name: data-loader
+        spec:
+          containers:
+          - name: data-loader
+            image: busybox
+            command: ['sleep', '3600']
+            volumeMounts:
+            - name: source-paper
+              mountPath: /source-paper
+            - name: source-velocity
+              mountPath: /source-velocity
+            - name: compiled-paper
+              mountPath: /compiled-paper
+            - name: compiled-velocity
+              mountPath: /compiled-velocity
+            - name: lobby-storage
+              mountPath: /lobby-storage
+            - name: game-server-storage
+              mountPath: /game-server-storage
+          volumes:
+          - name: source-paper
+            persistentVolumeClaim:
+              claimName: source-paper-pvc
+          - name: source-velocity
+            persistentVolumeClaim:
+              claimName: source-velocity-pvc
+          - name: compiled-paper
+            persistentVolumeClaim:
+              claimName: compiled-paper-pvc
+          - name: compiled-velocity
+            persistentVolumeClaim:
+              claimName: compiled-velocity-pvc
+          - name: lobby-storage
+            persistentVolumeClaim:
+              claimName: lobby-pvc
+          - name: game-server-storage
+            persistentVolumeClaim:
+              claimName: game-server-pvc
+        EOF
+
+    - name: Wait for data-loader pod to be ready
+      shell: kubectl wait --for=condition=ready pod/data-loader --timeout=120s
+
+    - name: Create directory structure and copy files
+      shell: |
+        # Create lobby-storage directories
+        kubectl exec data-loader -- mkdir -p /lobby-storage/plugins/LuckPerms
+        kubectl exec data-loader -- mkdir -p /lobby-storage/plugins/Plan
+        kubectl exec data-loader -- mkdir -p /lobby-storage/plugins/LibertyBans
+        kubectl exec data-loader -- mkdir -p /lobby-storage/plugins/BlueMap/storages
+        kubectl exec data-loader -- mkdir -p /lobby-storage/world
+
+        # Create game-server-storage directories
+        kubectl exec data-loader -- mkdir -p /game-server-storage/plugins/LuckPerms
+        kubectl exec data-loader -- mkdir -p /game-server-storage/plugins/Plan
+        kubectl exec data-loader -- mkdir -p /game-server-storage/plugins/LibertyBans
+        kubectl exec data-loader -- mkdir -p /game-server-storage/plugins/BlueMap/storages
+
+        # Now copy the files
+        kubectl cp src/plugin/source_code/paper/. data-loader:/source-paper/
+        kubectl cp src/plugin/source_code/velocity/. data-loader:/source-velocity/
+
+        kubectl cp src/plugin/compiled_code/paper/. data-loader:/compiled-paper/
+        kubectl cp src/plugin/compiled_code/velocity/. data-loader:/compiled-velocity/
+
+        kubectl cp src/server/common/lobby-files/db_config/luckperms_config.yml data-loader:/lobby-storage/plugins/LuckPerms/config.yml
+        kubectl cp src/server/common/lobby-files/db_config/plan_config.yml data-loader:/lobby-storage/plugins/Plan/config.yml
+        kubectl cp src/server/common/lobby-files/db_config/sql.yml data-loader:/lobby-storage/plugins/LibertyBans/sql.yml
+        kubectl cp src/server/common/lobby-files/db_config/sql.conf data-loader:/lobby-storage/plugins/BlueMap/storages/sql.conf
+        kubectl cp src/server/common/lobby-files/mapLobby/Natural-Lobby/. data-loader:/lobby-storage/world/
+
+        kubectl cp src/server/common/game-server-files/db_config/luckperms_config.yml data-loader:/game-server-storage/plugins/LuckPerms/config.yml
+        kubectl cp src/server/common/game-server-files/db_config/plan_config.yml data-loader:/game-server-storage/plugins/Plan/config.yml
+        kubectl cp src/server/common/game-server-files/db_config/sql.yml data-loader:/game-server-storage/plugins/LibertyBans/sql.yml
+        kubectl cp src/server/common/game-server-files/db_config/sql.conf data-loader:/game-server-storage/plugins/BlueMap/storages/sql.conf
+      args:
+        chdir: /home/{{ ansible_user }}
+
+    - name: Verify files copied
+      shell: |
+        kubectl exec data-loader -- ls -la /source-paper/
+        kubectl exec data-loader -- ls -la /source-velocity/
+        kubectl exec data-loader -- ls -la /compiled-paper/
+        kubectl exec data-loader -- ls -la /compiled-velocity/
+        kubectl exec data-loader -- ls -la /lobby-storage/plugins/LuckPerms/
+        kubectl exec data-loader -- ls -la /lobby-storage/plugins/Plan/
+        kubectl exec data-loader -- ls -la /lobby-storage/plugins/LibertyBans/
+        kubectl exec data-loader -- ls -la /lobby-storage/plugins/BlueMap/storages/
+        kubectl exec data-loader -- ls -la /lobby-storage/world/
+        kubectl exec data-loader -- ls -la /game-server-storage/plugins/LuckPerms/
+        kubectl exec data-loader -- ls -la /game-server-storage/plugins/Plan/
+        kubectl exec data-loader -- ls -la /game-server-storage/plugins/LibertyBans/
+        kubectl exec data-loader -- ls -la /game-server-storage/plugins/BlueMap/storages/
+      register: file_check
+
+    - name: Show copied files
+      debug:
+        var: file_check.stdout_lines
+
+    - name: Delete temporary pod
+      shell: kubectl delete pod data-loader

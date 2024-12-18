@@ -2,7 +2,15 @@
 - name: Deploy Docker registry
   hosts: master
   tasks:
+    - name: Install pip3
+      become: true
+      apt:
+        name: python3-pip
+        state: present
+        update_cache: yes
+
     - name: Install kubernetes Python library
+      become: true
       pip:
         name: kubernetes
         state: present
@@ -52,6 +60,7 @@
             name: registry
             namespace: registry
           spec:
+            type: LoadBalancer
             selector:
               app: registry
             ports:

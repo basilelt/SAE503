@@ -1,0 +1,131 @@
+---
+- name: Build and push images to the registry
+  hosts: master
+  become: true
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg-agent
+          - software-properties-common
+        state: present
+        update_cache: yes
+
+    - name: Add Docker's official GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker apt repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+
+    - name: Install Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+
+    - name: Get registry IP
+      become: true
+      shell: kubectl get services -n registry registry -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+      register: registry_ip_output
+
+    - name: Set registry IP variable
+      set_fact:
+        registry_ip: "{{ registry_ip_output.stdout }}"
+    
+    - name: Store registry IP in file
+      copy:
+        content: "{{ registry_ip }}"
+        dest: "/tmp/registry_ip"
+      delegate_to: localhost
+      become: false
+
+    - name: Configure Docker to trust the insecure registry
+      copy:
+        dest: /etc/docker/daemon.json
+        content: |
+          {
+            "insecure-registries": ["{{ registry_ip }}:5000"]
+          }
+
+    - name: Restart Docker
+      systemd:
+        name: docker
+        state: restarted
+
+    - name: Copy src folder to the remote hosts
+      synchronize:
+        src: ../src
+        dest: /home/{{ ansible_user }}/
+        recursive: yes
+        delete: yes
+        rsync_opts:
+          - "--chown={{ ansible_user }}:{{ ansible_user }}"
+
+    - name: Build and tag Docker images
+      shell: |
+        docker build -t {{ registry_ip }}:5000/mysql server/mysql
+        docker build -t {{ registry_ip }}:5000/maven plugin/maven
+        docker build -t {{ registry_ip }}:5000/gradle plugin/gradle
+        docker build -t {{ registry_ip }}:5000/game-server -f server/common/game-server-files/Dockerfile .
+        docker build -t {{ registry_ip }}:5000/lobby -f server/common/lobby-files/Dockerfile .
+        docker build -t {{ registry_ip }}:5000/proxy -f server/common/proxy-files/Dockerfile .
+      args:
+        chdir: /home/{{ ansible_user }}/src
+
+    - name: Push images to the registry
+      shell: |
+        docker push {{ registry_ip }}:5000/mysql
+        docker push {{ registry_ip }}:5000/maven
+        docker push {{ registry_ip }}:5000/gradle
+        docker push {{ registry_ip }}:5000/game-server
+        docker push {{ registry_ip }}:5000/lobby
+        docker push {{ registry_ip }}:5000/proxy
+
+- name: Configure k3s registry
+  hosts: node
+  become: true
+  tasks:
+    - name: Read registry IP
+      slurp:
+        src: "/tmp/registry_ip"
+      register: registry_ip_file
+      delegate_to: localhost
+      become: false
+
+    - name: Set registry IP fact
+      set_fact:
+        registry_ip: "{{ registry_ip_file['content'] | b64decode | trim }}"
+
+    - name: Create k3s directory
+      file:
+        path: /etc/rancher/k3s
+        state: directory
+        mode: '0755'
+
+    - name: Configure k3s registries
+      copy:
+        dest: /etc/rancher/k3s/registries.yaml
+        content: |
+          mirrors:
+            "{{ registry_ip }}:5000":
+              endpoint:
+                - "http://{{ registry_ip }}:5000"
+          configs:
+            "{{ registry_ip }}:5000":
+              tls:
+                insecure_skip_verify: true
+
+    - name: Restart k3s-node
+      systemd:
+        name: k3s-node
+        state: restarted
+        daemon_reload: yes
