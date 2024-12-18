@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -uo pipefail
+IFS=$'\n\t'
+
+# Load utility methods
+# shellcheck disable=SC1091
+. "$ROOT_DIR/utils"
+
+function cleanup() {
+    echo "Cleaning up..."
+}
+
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+    trap cleanup EXIT
+
+    # shellcheck disable=SC2154
+    path=$(${cli_name_app} zoptions rc read .dir)
+    cd "$path" || fatal "Failed to cd to $path"
+
+     info "Launching ansible playbook to deploy manifests on the k3s cluster"
+
+    # shellcheck disable=SC1091
+    source ".venv/bin/activate"
+    info which python
+
+    ansible-playbook deploy-ansible/manifests_deploy.yml -i deploy-ansible/hosts.ini
+fi

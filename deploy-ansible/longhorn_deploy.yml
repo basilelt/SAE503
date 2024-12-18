@@ -1,0 +1,122 @@
+---
+- name: Install NFS utilities
+  hosts: all
+  become: true
+  tasks:
+    - name: Install NFS common packages
+      package:
+        name: 
+          - nfs-common
+          - nfs-kernel-server
+        state: present
+
+- name: Deploy Longhorn Storage and PVCs
+  hosts: master
+  become: true
+  tasks:
+    - name: Create remote manifests directory
+      file:
+        path: /home/{{ ansible_user }}/k3s-manifests
+        state: directory
+        mode: '0755'
+        group: "{{ ansible_user }}"
+        owner: "{{ ansible_user }}"
+
+    - name: Download Longhorn manifest
+      get_url:
+        url: https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/longhorn.yaml
+        dest: /home/{{ ansible_user }}/k3s-manifests/longhorn.yaml
+        mode: '0644'
+
+    - name: Apply Longhorn manifest
+      shell: kubectl apply -f /home/{{ ansible_user }}/k3s-manifests/longhorn.yaml
+      register: longhorn_deploy
+
+    - name: Wait for Longhorn pods to be ready
+      shell: kubectl -n longhorn-system wait --for=condition=ready pod --all --timeout=300s
+      register: wait_pods
+
+    - name: Verify Longhorn deployment
+      shell: kubectl -n longhorn-system get pods
+      register: verify_pods
+      
+    - name: Show Longhorn pods status
+      debug:
+        var: verify_pods.stdout_lines
+
+    - name: Copy PVC manifest to master
+      template:
+        src: ../src/k3s-manifests/StorageRessources.yml.j2
+        dest: /home/{{ ansible_user }}/k3s-manifests/storage-resources.yml
+
+    - name: Apply PVC manifest
+      shell: kubectl apply -f /home/{{ ansible_user }}/k3s-manifests/storage-resources.yml
+      register: pvc_creation
+
+    - name: Wait for PVCs to be bound
+      shell: |
+        TOTAL_PVC=$(kubectl get pvc | grep -v NAME | wc -l)
+        BOUND_PVC=$(kubectl get pvc | grep -v NAME | grep Bound | wc -l)
+        [ "$TOTAL_PVC" -eq "$BOUND_PVC" ] || exit 1
+      register: pvc_status
+      retries: 30
+      delay: 10
+      until: pvc_status.rc == 0
+      changed_when: false
+
+    - name: Verify PVC status
+      shell: kubectl get pvc
+      register: verify_pvcs
+      
+    - name: Show PVC status
+      debug:
+        var: verify_pvcs.stdout_lines
+
+    - name: Create temporary pod for data transfer
+      shell: |
+        cat <<EOF | kubectl apply -f -
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          name: data-loader
+        spec:
+          containers:
+          - name: data-loader
+            image: busybox
+            command: ['sleep', '3600']
+            volumeMounts:
+            - name: source-paper
+              mountPath: /source-paper
+            - name: source-velocity
+              mountPath: /source-velocity
+          volumes:
+          - name: source-paper
+            persistentVolumeClaim:
+              claimName: source-paper-pvc
+          - name: source-velocity
+            persistentVolumeClaim:
+              claimName: source-velocity-pvc
+        EOF
+
+    - name: Wait for data-loader pod to be ready
+      shell: kubectl wait --for=condition=ready pod/data-loader --timeout=120s
+
+    - name: Copy and extract source code
+      shell: |
+        kubectl cp src/plugin/source_code/paper/. data-loader:/source-paper/
+        kubectl cp src/plugin/source_code/velocity/. data-loader:/source-velocity/
+      args:
+        chdir: /home/{{ ansible_user }}
+
+    - name: Verify files copied
+      shell: |
+        kubectl exec data-loader -- ls -la /source-paper/
+        kubectl exec data-loader -- ls -la /source-velocity/
+      register: file_check
+
+    - name: Show copied files
+      debug:
+        var: file_check.stdout_lines
+
+    - name: Delete temporary pod
+      shell: kubectl delete pod data-loader

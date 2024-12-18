@@ -1,0 +1,46 @@
+---
+- name: Deploy k3s manifests
+  hosts: master
+  tasks:
+    - name: Create remote manifests directory
+      file:
+        path: /home/{{ ansible_user }}/k3s-manifests
+        state: directory
+        mode: '0755'
+
+    - name: Get registry IP
+      become: true
+      shell: kubectl get services -n registry registry -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+      register: registry_ip_output
+
+    - name: Set registry IP variable
+      set_fact:
+        registry_ip: "{{ registry_ip_output.stdout }}"
+
+    - name: Copy ConfigMap manifest to master
+      template:
+        src: ../src/k3s-manifests/ConfigMap.yml.j2
+        dest: /home/{{ ansible_user }}/k3s-manifests/ConfigMap.yml
+    
+    - name: Copy Services manifest to master
+      template:
+        src: ../src/k3s-manifests/Services.yml.j2
+        dest: /home/{{ ansible_user }}/k3s-manifests/Services.yml
+    
+    - name: Copy Deployments manifest to master
+      template:
+        src: ../src/k3s-manifests/Deployments.yml.j2
+        dest: /home/{{ ansible_user }}/k3s-manifests/Deployments.yml
+
+    - name: Apply k3s manifests in order
+      become: true
+      shell: kubectl apply -f /home/{{ ansible_user }}/k3s-manifests/{{ item }}
+      with_items:
+        - ConfigMap.yml
+        - Services.yml
+        - Deployments.yml
+      register: apply_output
+
+    - name: Show apply output
+      debug:
+        var: apply_output.stdout_lines

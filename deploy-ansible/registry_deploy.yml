@@ -60,11 +60,10 @@
             name: registry
             namespace: registry
           spec:
-            type: NodePort
+            type: LoadBalancer
             selector:
               app: registry
             ports:
               - protocol: TCP
                 port: 5000
                 targetPort: 5000
-                nodePort: 32000
