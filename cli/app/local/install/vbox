@@ -18,7 +18,7 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
         info "virtualbox is not installed. Please install virtualbox first."
         if [[ "$OSTYPE" == "darwin"* ]]; then
             info "Installing virtualbox using Homebrew"
-            brew install virtualbox
+            brew install --cask utm
         elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
             info "Installing virtualbox using apt-get"
             wget -O - https://www.virtualbox.org/download/oracle_vbox_2016.asc | sudo apt-key add -

@@ -1,0 +1,1 @@
+Deploy Longhorn (NFS wrapper for kubernetes PVC) to the kube cluster via ansible

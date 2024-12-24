@@ -1,1 +1,1 @@
-Launch the playbook ansible to install kubernetes on hosts
+Launch the playbook ansible to install kubernetes on the remote hosts
