@@ -1,0 +1,1 @@
+Deploy the manifests needed for the stack on the kube cluster via ansible

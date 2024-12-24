@@ -4,3 +4,4 @@ keys
 .vagrant
 .VSCodeCounter
 kompose-linux-amd64
+.config
