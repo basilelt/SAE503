@@ -27,9 +27,8 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
         info "Installing Python3.11, python3.11-venv, and pip3 using apt-get"
         sudo apt-get update
         sudo apt-get install -y python3.11 python3.11-venv python3-pip rsync
-        else
-            fatal "Unsupported operating system: $OSTYPE"
-        fi
+    else
+        fatal "Unsupported operating system: $OSTYPE"
     fi
 
     # Create a virtual environment

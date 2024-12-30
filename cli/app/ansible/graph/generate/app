@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -uo pipefail
+IFS=$'\n\t'
+
+# Load utility methods
+# shellcheck disable=SC1091
+. "$ROOT_DIR/utils"
+
+function cleanup() {
+    echo "Cleaning up..."
+}
+
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+    trap cleanup EXIT
+
+    # shellcheck disable=SC2154
+    path=$(${cli_name_app} zoptions rc read .dir)
+    cd "$path" || fatal "Failed to cd to $path"
+
+    source "$path"/.venv/bin/activate
+
+    for play in "$path"/deploy-ansible/*.yml; do
+        name=$(basename "$play" .yml)
+        ansible-playbook-grapher --include-role-tasks --hide-empty-plays -e "@$path"/deploy-ansible/group_vars/all.yml --renderer mermaid-flowchart --inventory "$path"/deploy-ansible/hosts.ini "$play"
+        mv -f "$path/$name.mmd" "$path/graphs/$name.md"
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' '1i\
+```mermaid
+' "$path/graphs/$name.md"
+            sed -i '' '/^---$/,/^---$/s/^title: .*$/title: Ansible Playbook Graph/' "$path/graphs/$name.md"
+        elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+            sed -i '1i ```mermaid' "$path"/graphs/site.md
+            sed -i '/^---$/,/^---$/s/^title: .*$/title: Ansible Playbook Graph/' "$path/graphs/$name.md"
+        else
+            fatal "Unsupported operating system: $OSTYPE"
+        fi
+        echo '```' >> "$path/graphs/$name.md"
+    done
+fi
