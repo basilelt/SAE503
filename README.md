@@ -33,6 +33,7 @@
       - [Deploying Kubernetes with Ansible](#deploying-kubernetes-with-ansible)
       - [Kubernetes Operations](#kubernetes-operations)
   - [Infrastructure diagram](#infrastructure-diagram)
+  - [Ansible diagram](#ansible-diagram)
   - [Description](#description)
   - [Organization](#organization)
   - [Contributing](#contributing)
@@ -211,7 +212,8 @@ Common commands to interact with the Kubernetes cluster include:
 
 ## Infrastructure diagram
 
-
+## Ansible diagram
+[Ansible Diagram](./site.md)
 
 ## Description
 
