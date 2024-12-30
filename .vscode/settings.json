@@ -25,6 +25,7 @@
         "dpkg",
         "gameserver",
         "getent",
+        "grapher",
         "healthcheck",
         "hostnames",
         "hostvars",

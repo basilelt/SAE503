@@ -213,7 +213,11 @@ Common commands to interact with the Kubernetes cluster include:
 ## Infrastructure diagram
 
 ## Ansible diagram
-[Ansible Diagram](./site.md)
+- [Kubernetes](./graphs/site.md)
+- [Docker](./graphs/docker_deploy.md)
+- [Longhorn](./graphs/longhorn_deploy.md)
+- [Manifests](./graphs/manifests_deploy.md)
+- [Registry](./graphs/registry_deploy.md)
 
 ## Description
 
