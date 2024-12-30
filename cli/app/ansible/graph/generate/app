@@ -28,9 +28,11 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
 ```mermaid
 ' "$path/graphs/$name.md"
             sed -i '' '/^---$/,/^---$/s/^title: .*$/title: Ansible Playbook Graph/' "$path/graphs/$name.md"
+            sed -i '' 's|/Users/blt/Documents/Github/perso/||g' "$path/graphs/site.md"
         elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
             sed -i '1i ```mermaid' "$path"/graphs/site.md
             sed -i '/^---$/,/^---$/s/^title: .*$/title: Ansible Playbook Graph/' "$path/graphs/$name.md"
+            sed -i 's|/Users/blt/Documents/Github/perso/||g' "$path/graphs/site.md"
         else
             fatal "Unsupported operating system: $OSTYPE"
         fi
