@@ -33,10 +33,10 @@
       - [Deploying Kubernetes with Ansible](#deploying-kubernetes-with-ansible)
       - [Kubernetes Operations](#kubernetes-operations)
   - [Infrastructure diagram](#infrastructure-diagram)
-  - [Ansible diagram](#ansible-diagram)
-  - [Description](#description)
+  - [Ansible diagrams](#ansible-diagrams)
+  - [Application diagram](#application-diagram)
+  - [Website diagram](#website-diagram)
   - [Organization](#organization)
-  - [Contributing](#contributing)
 
 ## Overview
 
@@ -211,20 +211,20 @@ Common commands to interact with the Kubernetes cluster include:
 - `kubectl logs <pod-name>`: View logs of a specific pod.
 
 ## Infrastructure diagram
+![Infrastructure Diagram](./graphs/infrastructure-diagram.png)
 
-## Ansible diagram
+## Ansible diagrams
 - [Kubernetes](./graphs/site.md)
 - [Docker](./graphs/docker_deploy.md)
 - [Longhorn](./graphs/longhorn_deploy.md)
 - [Manifests](./graphs/manifests_deploy.md)
 - [Registry](./graphs/registry_deploy.md)
 
-## Description
+## Application diagram
+![Application Diagram](./graphs/application-diagram.png)
 
+## Website diagram
+![Website Diagram](./graphs/website-diagram.png)
 
 ## Organization
 🗂️ View the full project organization board [here](https://github.com/users/basilelt/projects/1/views/8)
-
-## Contributing
-
-Contributions are welcome! Please submit a pull request or open an issue to discuss improvements or report bugs.
