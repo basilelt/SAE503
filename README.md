@@ -89,6 +89,13 @@ It includes a CLI tool that automates:
    sae
    ```
 
+4. **Complete Clone of the Project**
+   To completely clone the project and its submodules use :
+
+   ```
+   sae git submod
+   ```
+
 ### Usage
 
 #### Available Commands
