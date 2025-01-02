@@ -227,6 +227,10 @@ Common commands to interact with the Kubernetes cluster include:
 - [Manifests](./graphs/manifests_deploy.md)
 - [Registry](./graphs/registry_deploy.md)
 
+## Application Overview
+
+In the [src/](src/) directory, you’ll find the core application logic, including its primary modules and configuration files. This folder serves as the foundation for all functionalities within the project, ensuring modular development and straightforward maintenance.
+
 ## Application diagram
 ![Application Diagram](./graphs/application-diagram.png)
 
