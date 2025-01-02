@@ -17,7 +17,7 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     path=$(${cli_name_app} zoptions rc read .dir)
     cd "$path" || fatal "Failed to cd to $path"
 
-    info "Launching ansible playbook to install kubernetes on hosts"
+    info "Launching ansible playbook to deploy the registry on the k3s cluster"
 
     # shellcheck disable=SC1091
     source ".venv/bin/activate"

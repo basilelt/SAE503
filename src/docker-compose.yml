@@ -9,13 +9,13 @@ services:
       MYSQL_PASSWORD: minecraft
     volumes:
       - mysql_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 10s
       retries: 5
+    networks:
+      - minecraft
 
   maven:
     build: ./plugin/maven
@@ -40,7 +40,7 @@ services:
       context: ./
       dockerfile: ./server/common/game-server-files/Dockerfile
     volumes:
-      - game-server-data:/data
+      - game-server:/data
       - ./plugin/compiled_code/paper:/data/compiled_plugins
     environment:
       - MYSQL_HOST=mysql
@@ -55,6 +55,8 @@ services:
         condition: service_completed_successfully
       gradle:
         condition: service_completed_successfully
+    networks:
+      - minecraft
 
   lobby:
     build: 
@@ -74,6 +76,8 @@ services:
         condition: service_healthy
       game-server:
         condition: service_started
+    networks:
+      - minecraft
 
   proxy:
     build: 
@@ -95,9 +99,14 @@ services:
         condition: service_started
       lobby:
         condition: service_started
+    networks:
+      - minecraft
 
 volumes:
+  game-server:
   lobby-data:
-  game-server-data:
   proxy-data:
   mysql_data:
+
+networks:
+  minecraft:

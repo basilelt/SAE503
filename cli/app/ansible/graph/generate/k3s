@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -uo pipefail
+IFS=$'\n\t'
+
+# Load utility methods
+# shellcheck disable=SC1091
+. "$ROOT_DIR/utils"
+
+function cleanup() {
+    echo "Cleaning up..."
+}
+
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+    trap cleanup EXIT
+
+    # shellcheck disable=SC2154
+    path=$(${cli_name_app} zoptions rc read .dir)
+    cd "$path" || fatal "Failed to cd to $path"
+
+    source "$path"/.venv/bin/activate
+
+    ansible-playbook-grapher --include-role-tasks --exclude-roles lxc,proxmox_lxc,raspberrypi,reset_proxmox_lxc --hide-empty-plays -e "@$path"/k3s-ansible/inventory/my-cluster/group_vars/all.yml --renderer mermaid-flowchart --inventory "$path"/k3s-ansible/inventory/my-cluster/hosts.ini "$path"/k3s-ansible/site.yml
+    mv -f "$path"/site.mmd "$path"/graphs/site.md
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' '1i\
+```mermaid
+' "$path/graphs/site.md"
+        sed -i '' '/^---$/,/^---$/s/^title: .*$/title: Ansible Playbook Graph/' "$path/graphs/site.md"
+        sed -i '' 's|/Users/blt/Documents/Github/perso/||g' "$path/graphs/site.md"
+    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        sed -i '1i ```mermaid' "$path/graphs/site.md"
+        sed -i '/^---$/,/^---$/s/^title: .*$/title: Ansible Playbook Graph/' "$path/graphs/site.md"
+        sed -i 's|/Users/blt/Documents/Github/perso/||g' "$path/graphs/site.md"
+    else
+        fatal "Unsupported operating system: $OSTYPE"
+    fi
+    echo '```' >> "$path/graphs/site.md"
+fi

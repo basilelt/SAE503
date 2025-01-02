@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+set -uo pipefail
+IFS=$'\n\t'
+
+# Load utility methods
+# shellcheck disable=SC1091
+. "$ROOT_DIR/utils"
+
+function cleanup() {
+    echo "Cleaning up..."
+}
+
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+    trap cleanup EXIT
+
+    # shellcheck disable=SC2154
+    path=$(${cli_name_app} zoptions rc read .dir)
+    cd "$path"/src || fatal "Failed to cd to $path"
+
+    # Get registry IP from k3s cluster
+    REGISTRY_IP=$(ssh -i ~/.ssh/vagrant_common_key -o StrictHostKeyChecking=no vagrant@192.168.30.11 \
+        "sudo kubectl get services -n registry registry -o jsonpath='{.status.loadBalancer.ingress[0].ip}'")
+
+    if [[ -z "${REGISTRY_IP}" ]]; then
+        fatal "Failed to get registry IP"
+    fi
+
+    info "Registry IP: ${REGISTRY_IP}"
+
+    # Check if Kompose is installed
+    if ! command -v kompose &> /dev/null; then
+        fatal "Kompose is not installed. Please install it first."
+    fi
+
+    # Run Kompose conversion with volume handling
+    kompose convert -f docker-compose.yml -o k3s-manifests/ \
+        --volumes persistentVolumeClaim \
+
+    # Check if Kompose conversion was successful
+    if [[ $? -ne 0 ]]; then
+        fatal "Kompose conversion failed."
+    fi
+
+    # Update storage size in all PersistentVolumeClaim YAML files
+    for pvc in k3s-manifests/*-persistentvolumeclaim.yaml; do
+        if [[ -f "$pvc" ]]; then
+            sed -i 's/storage: 100Mi/storage: 10Gi/' "$pvc"
+            info "Updated storage to 10Gi in $pvc"
+        fi
+    done
+
+    info "All PersistentVolumeClaims have been updated to use 10Gi storage."
+
+    # Update image references in all deployment YAML files
+    for deployment in k3s-manifests/*-deployment.yaml; do
+        if [[ -f "$deployment" ]]; then
+            sed -i "s|image: localhost|image: ${REGISTRY_IP}|g" "$deployment"
+            info "Updated registry IP in $deployment"
+        fi
+    done
+
+    info "All deployments have been updated to use the registry IP."
+
+    # Update services to use LoadBalancer
+    for service in k3s-manifests/*-service.yaml; do
+        if [[ -f "$service" ]]; then
+            # Add type: LoadBalancer after spec:
+            sed -i '/spec:/a\  type: LoadBalancer' "$service"
+            # Add protocol: TCP after targetPort
+            sed -i '/targetPort:/a\      protocol: TCP' "$service"
+            info "Updated service type to LoadBalancer and added TCP protocol in $service"
+        fi
+    done
+
+    info "All services have been updated to use LoadBalancer type."
+fi

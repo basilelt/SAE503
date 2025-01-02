@@ -1,0 +1,209 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: {{ registry_ip }}:5000/mysql
+        envFrom:
+        - configMapRef:
+            name: mysql-config
+        volumeMounts:
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+        readinessProbe:
+          exec:
+            command: ["mysqladmin", "ping", "-h", "localhost"]
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 10
+      volumes:
+      - name: mysql-data
+        persistentVolumeClaim:
+          claimName: mysql-pvc
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: maven
+spec:
+  template:
+    spec:
+      containers:
+      - name: maven
+        image: {{ registry_ip }}:5000/maven
+        volumeMounts:
+        - name: compiled-paper
+          mountPath: /app/compiled_code/paper
+        - name: compiled-velocity
+          mountPath: /app/compiled_code/velocity
+        - name: source-paper
+          mountPath: /app/source_code/paper
+        - name: source-velocity
+          mountPath: /app/source_code/velocity
+      volumes:
+      - name: compiled-paper
+        persistentVolumeClaim:
+          claimName: compiled-paper-pvc
+      - name: compiled-velocity
+        persistentVolumeClaim:
+          claimName: compiled-velocity-pvc
+      - name: source-paper
+        persistentVolumeClaim:
+          claimName: source-paper-pvc
+      - name: source-velocity
+        persistentVolumeClaim:
+          claimName: source-velocity-pvc
+      restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gradle
+spec:
+  template:
+    spec:
+      containers:
+      - name: gradle
+        image: {{ registry_ip }}:5000/gradle
+        volumeMounts:
+        - name: compiled-paper
+          mountPath: /app/compiled_code/paper
+        - name: compiled-velocity
+          mountPath: /app/compiled_code/velocity
+        - name: source-paper
+          mountPath: /app/source_code/paper
+        - name: source-velocity
+          mountPath: /app/source_code/velocity
+      volumes:
+      - name: compiled-paper
+        persistentVolumeClaim:
+          claimName: compiled-paper-pvc
+      - name: compiled-velocity
+        persistentVolumeClaim:
+          claimName: compiled-velocity-pvc
+      - name: source-paper
+        persistentVolumeClaim:
+          claimName: source-paper-pvc
+      - name: source-velocity
+        persistentVolumeClaim:
+          claimName: source-velocity-pvc
+      restartPolicy: Never
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-server
+spec:
+  selector:
+    matchLabels:
+      app: game-server
+  template:
+    metadata:
+      labels:
+        app: game-server
+    spec:
+      initContainers:
+      - name: wait-for-mysql
+        image: busybox
+        command: ['sh', '-c', 'until nc -z mysql.default.svc.cluster.local 3306; do echo waiting for mysql; sleep 2; done;']
+      containers:
+      - name: game-server
+        image: {{ registry_ip }}:5000/game-server
+        envFrom:
+        - configMapRef:
+            name: mysql-config
+        volumeMounts:
+        - name: game-server-storage
+          mountPath: /data
+        - name: compiled-paper
+          mountPath: /data/compiled_plugins
+      volumes:
+      - name: game-server-storage
+        persistentVolumeClaim:
+          claimName: game-server-pvc
+      - name: compiled-paper
+        persistentVolumeClaim:
+          claimName: compiled-paper-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lobby
+spec:
+  selector:
+    matchLabels:
+      app: lobby
+  template:
+    metadata:
+      labels:
+        app: lobby
+    spec:
+      initContainers:
+      - name: wait-for-gameserver
+        image: busybox
+        command: ['sh', '-c', 'until nc -z game-server.default.svc.cluster.local 25565; do echo waiting for game-server; sleep 2; done;']
+      containers:
+      - name: lobby
+        image: {{ registry_ip }}:5000/lobby
+        envFrom:
+        - configMapRef:
+            name: mysql-config
+        volumeMounts:
+        - name: lobby-storage
+          mountPath: /data
+        - name: compiled-paper
+          mountPath: /data/compiled_plugins
+      volumes:
+      - name: lobby-storage
+        persistentVolumeClaim:
+          claimName: lobby-pvc
+      - name: compiled-paper
+        persistentVolumeClaim:
+          claimName: compiled-paper-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proxy
+spec:
+  selector:
+    matchLabels:
+      app: proxy
+  template:
+    metadata:
+      labels:
+        app: proxy
+    spec:
+      initContainers:
+      - name: wait-for-lobby
+        image: busybox
+        command: ['sh', '-c', 'until nc -z lobby.default.svc.cluster.local 25565; do echo waiting for lobby; sleep 2; done;']
+      containers:
+      - name: proxy
+        image: {{ registry_ip }}:5000/proxy
+        envFrom:
+        - configMapRef:
+            name: mysql-config
+        volumeMounts:
+        - name: proxy-storage
+          mountPath: /server
+        - name: compiled-velocity
+          mountPath: /server/compiled_plugins
+      volumes:
+      - name: proxy-storage
+        persistentVolumeClaim:
+          claimName: proxy-pvc
+      - name: compiled-velocity
+        persistentVolumeClaim:
+          claimName: compiled-velocity-pvc

@@ -18,7 +18,8 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
         info "Vagrant is not installed. Please install Vagrant first."
         if [[ "$OSTYPE" == "darwin"* ]]; then
             info "Installing Vagrant using Homebrew"
-            brew install vagrant
+            brew tap hashicorp/tap
+            brew install hashicorp/tap/hashicorp-vagrant
         elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
             info "Installing Vagrant using apt-get"
             wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg

@@ -1,27 +1,51 @@
-# Minecraft server on kubernetes
+# Minecraft Server on Kubernetes 🚀
 
-## CLI
+[![OS](https://img.shields.io/badge/OS-Ubuntu%2022.04-orange?logo=ubuntu&logoColor=white)](https://releases.ubuntu.com/22.04/)
+[![K3s](https://img.shields.io/badge/K3s-v1.30.2%2Bk3s2-brightgreen?logo=kubernetes&logoColor=white)](https://k3s.io)
+[![Vagrant](https://img.shields.io/badge/Vagrant-2.4.1-1563FF?logo=vagrant&logoColor=white)](https://www.vagrantup.com)
 
-## Overview
+[![Python](https://img.shields.io/badge/Python-3.11.4-blue?logo=python&logoColor=white)](https://www.python.org)
+[![Ansible](https://img.shields.io/badge/Ansible-11.1.0-EE0000?logo=ansible&logoColor=white)](https://www.ansible.com)
+[![Bash](https://img.shields.io/badge/Bash-5.0.17-4EAA25?logo=gnu-bash&logoColor=white)](https://www.gnu.org/software/bash/)
 
-The **CLI** is a powerful command-line interface designed to streamline various local machine operations and facilitate the deployment of Kubernetes clusters using Ansible. This README provides instructions on how to install, use the CLI, and deploy Kubernetes with Ansible step by step.
+[![Docker](https://img.shields.io/badge/Docker-Latest-2496ED?logo=docker&logoColor=white)](https://www.docker.com)
+[![Gradle](https://img.shields.io/badge/Gradle-8.11.1--jdk21-02303A?logo=gradle&logoColor=white)](https://gradle.org)
+[![Maven](https://img.shields.io/badge/Maven-3.9.9--eclipse--temurin--21-C71A36?logo=apache-maven&logoColor=white)](https://maven.apache.org)
+
+
+[![GitHub issues](https://img.shields.io/github/issues-raw/basilelt/SAE503)](https://github.com/basilelt/SAE503/issues)
+[![GitHub stars](https://img.shields.io/github/stars/basilelt/SAE503)](https://github.com/basilelt/SAE503/stargazers)
+
+> Easily deploy and manage Minecraft servers on Kubernetes with a streamlined CLI tool!  
 
 ## Table of Contents
-
-- [Minecraft server on kubernetes](#minecraft-server-on-kubernetes)
-  - [CLI](#cli)
-  - [Overview](#overview)
+- [Minecraft Server on Kubernetes 🚀](#minecraft-server-on-kubernetes-)
   - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
   - [Installation](#installation)
     - [Prerequisites](#prerequisites)
     - [Steps to Install the CLI](#steps-to-install-the-cli)
-  - [Usage](#usage)
-    - [Available Commands](#available-commands)
-  - [Deploying Kubernetes with Ansible](#deploying-kubernetes-with-ansible)
-    - [Prerequisites](#prerequisites-1)
-    - [Step-by-Step Deployment](#step-by-step-deployment)
-  - [Contributing](#contributing)
-  - [License](#license)
+    - [Usage](#usage)
+      - [Available Commands](#available-commands)
+    - [Installing Kubernetes with Ansible](#installing-kubernetes-with-ansible)
+      - [Prerequisites](#prerequisites-1)
+      - [Step-by-Step Deployment](#step-by-step-deployment)
+      - [Deploying Kubernetes with Ansible](#deploying-kubernetes-with-ansible)
+      - [Kubernetes Operations](#kubernetes-operations)
+  - [Infrastructure diagram](#infrastructure-diagram)
+  - [Ansible diagrams](#ansible-diagrams)
+  - [Application diagram](#application-diagram)
+  - [Website diagram](#website-diagram)
+  - [Organization](#organization)
+
+## Overview
+
+This repository contains all the tools necessary to **deploy an entire infrastructure for Minecraft servers on Kubernetes**.  
+It includes a CLI tool that automates:
+- Setting up Kubernetes clusters
+- Managing DNS entries
+- Installing essential tools with a few simple commands
+
 
 ## Installation
 
@@ -31,7 +55,7 @@ The **CLI** is a powerful command-line interface designed to streamline various 
 - **Python 3**: Required for creating virtual environments and running Ansible.
 - **Ansible**: Automation tool for deploying Kubernetes.
 - **Git**: For cloning the repository.
-- **Homebrew** (macOS) or **apt-get** (Linux): For installing necessary packages.
+- **Homebrew (macOS)** or **apt-get (Linux)**: For installing necessary packages.
 
 ### Steps to Install the CLI
 
@@ -65,68 +89,149 @@ The **CLI** is a powerful command-line interface designed to streamline various 
    sae
    ```
 
-## Usage
+4. **Complete Clone of the Project**
+   To completely clone the project and its submodules use :
 
-### Available Commands
+   ```
+   sae git submod
+   ```
+
+### Usage
+
+#### Available Commands
 
 The SAE CLI provides a variety of commands categorized under different operations. Below is an overview of the available commands:
 
 - **Local Machine Operations**
+  - `docker prune`: Stop the stack of the project, removes all stopped containers, dangling images, unused networks and volumes.
+
+  - `git submod`: Initialize and update submodules of the project.
+
   - `install ansible`: Installs Ansible locally.
+  - `install docker`: Installs Docker locally.
+  - `install flask`: Installs Flask to the project venv (install ansible).
+  - `install kompose`: Installs Kompose locally.
+  - `install vagrant`: Installs Vagrant locally.
+  - `install vbox`: Installs VirtualBox locally (UTM on mac).
+
+  - `kompose convert`: Converts the docker-compose file to Kubernetes manifests.
+
   - `ssh create`: Creates an SSH key pair.
   - `ssh deploy`: Deploys SSH keys to remote hosts.
+
+  - `vagrant rl`: Reloads the Vagrant VMs.
+  - `vagrant rm`: Destroy the Vagrant VMs.
+  - `vagrant run`: Starts the Vagrant VMs.
   
 - **Kubernetes Deployment**
-  - `ansible kube install`: Installs Kubernetes on specified hosts.
+  - `ansible kube install`: Installs Kubernetes on all hosts.
+  - `ansible deploy docker`: Deploys Docker on master hosts.
+  - `ansible deploy longhorn`: Deploys Longhorn on master hosts.
+  - `ansible deploy manifests`: Deploys Kubernetes manifests on master hosts.
+  - `ansible deploy registry`: Deploys a Docker registry on master hosts.
   
 - **DNS Operations**
   - `dns host`: Modifies the hosts file to set up DNS entries.
 
-## Deploying Kubernetes with Ansible
+### Installing Kubernetes with Ansible
 
 Deploying a Kubernetes cluster using Ansible through the SAE CLI involves several steps. Follow the guide below to perform the deployment seamlessly.
 
-### Prerequisites
+#### Prerequisites
 
-- **Remote Hosts**: Ensure you have access to the master and worker nodes where Kubernetes will be installed.
+- **Remote Hosts**: Ensure you have access to the master and node nodes where Kubernetes will be installed.
 - **SSH Access**: Set up SSH access to all remote hosts.
-- **Ansible Inventory**: Configure your `inventory.yml` with the correct hostnames and SSH credentials.
+- **Ansible Inventory**: Configure your `k3s-ansible/inventory/my-cluster/hosts.ini` with the correct hostnames or IPs.
+- **Ansible vars**: Configure your `k3s-ansible/inventory/my-cluster/group_vars/all.yml` with the correct values (ansible_user, ssh_key, ...).
 
-### Step-by-Step Deployment
+#### Step-by-Step Deployment
 
 1. **Set Up SSH Keys**
 
-   Create an SSH key pair and deploy it to all your remote hosts.
+  Create an SSH key pair and deploy it to all your remote hosts.
 
-   ```bash
-   sae local ssh create
-   sae local ssh deploy -u your_ssh_user -i master_ip
-   sae local ssh deploy -u your_ssh_user -i worker1_ip
-   sae local ssh deploy -u your_ssh_user -i worker2_ip
-   sae local ssh deploy -u your_ssh_user -i worker3_ip
-   ```
+  ```bash
+  sae local ssh create
+  sae local ssh deploy -u your_ssh_user -i master_ip
+  sae local ssh deploy -u your_ssh_user -i node1_ip
+  sae local ssh deploy -u your_ssh_user -i node2_ip
+  sae local ssh deploy -u your_ssh_user -i node3_ip
+  ```
 
-   Replace `your_ssh_user` with your SSH username and `master_ip`, `worker1_ip`, etc., with the respective IP addresses of your hosts.
+  Replace `your_ssh_user` with your SSH username and `master_ip`, `node1_ip`, etc., with the respective IP addresses of your hosts.
 
-2. **Install Kubernetes on Hosts**
+2. **Install Kubernetes on Hosts and make them join the cluster**
 
-   Use the CLI to run the Ansible playbook that installs Kubernetes.
+  Use the CLI to run the Ansible playbook that installs Kubernetes.
 
-   ```bash
-   sae ansible kube install
-   ```
+  ```bash
+  sae ansible kube install
+  ```
 
-   This command performs the following actions:
+  This command performs the following actions:
 
-   - Loads utility methods.
-   - Navigates to the directory specified in the runtime configuration.
-   - Activates the virtual environment.
-   - Executes the Ansible playbook `deploy_kubernetes.yml` using the inventory defined in `inventory.yml`.
+  - Loads utility methods.
+  - Navigates to the directory specified in the runtime configuration.
+  - Activates the virtual environment.
+  - Executes the Ansible playbook `site.yml` using the inventory defined in `hosts.ini`.
 
-## Contributing
+#### Deploying Kubernetes with Ansible
 
-Contributions are welcome! Please submit a pull request or open an issue to discuss improvements or report bugs.
+  Use the CLI to run the Ansible playbooks that deploy the dependencies.
 
-## License
+  - Install and set up a registry on the master hosts.
+  ```bash
+  sae ansible deploy registry
+  ```
 
-This project is licensed under the [MIT License](LICENSE).
+  - Install docker on the master hosts and build/push the images for the future pods.
+  ```bash
+  sae ansible deploy docker
+  ```
+
+  - Install and setup Longhorn on the master hosts. Then creates the storage class and PVCs needing initialization. Finally, inits those PVCs with data (source codes, etc).
+  ```bash
+  sae ansible deploy longhorn
+  ```
+
+  - Deploy the Kubernetes manifests on the master hosts (config maps, deployments, services, etc).
+  ```bash
+  sae ansible deploy manifests
+  ```
+
+#### Kubernetes Operations
+
+Once deployed and running, you can access the Minecraft server using the IP address of the master node (if multiple masters then use the BGP IP set up in `k3s-ansible/inventory/my-cluster/group_vars/all.yml`). The server will be accessible on port 25565 (default).
+
+Common commands to interact with the Kubernetes cluster include:
+(for vagrant testing use `vagrant ssh master1`)
+- `kubectl get nodes`: List all nodes in the cluster.
+- `kubectl get pods`: List all pods in the cluster.
+- `kubectl get svc`: List all services in the cluster.
+- `kubectl get cm`: List all config maps in the cluster.
+- `kubectl get pvc`: List all persistent volume claims in the cluster.
+- `kubectl get pv`: List all persistent volumes in the cluster.
+- `kubectl get sc`: List all storage classes in the cluster.
+- `kubectl get ns`: List all namespaces in the cluster.
+- `kubectl get all`: List all resources in the cluster.
+- `kubectl describe pod <pod-name>`: Describe a specific pod.
+- `kubectl logs <pod-name>`: View logs of a specific pod.
+
+## Infrastructure diagram
+![Infrastructure Diagram](./graphs/infrastructure-diagram.png)
+
+## Ansible diagrams
+- [Kubernetes](./graphs/site.md)
+- [Docker](./graphs/docker_deploy.md)
+- [Longhorn](./graphs/longhorn_deploy.md)
+- [Manifests](./graphs/manifests_deploy.md)
+- [Registry](./graphs/registry_deploy.md)
+
+## Application diagram
+![Application Diagram](./graphs/application-diagram.png)
+
+## Website diagram
+![Website Diagram](./graphs/website-diagram.png)
+
+## Organization
+🗂️ View the full project organization board [here](https://github.com/users/basilelt/projects/1/views/8)
