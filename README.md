@@ -62,8 +62,8 @@ It includes a CLI tool that automates:
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/your-repo/sae-cli.git
-   cd sae-cli
+   git clone https://github.com/basilelt/SAE503
+   cd SAE503
    ```
 
 2. **Install the CLI**
@@ -91,7 +91,7 @@ It includes a CLI tool that automates:
 
 4. **Complete Clone of the Project**
    To completely clone the project and its submodules use :
-
+   *You need to have git SSH setup*
    ```
    sae git submod
    ```
